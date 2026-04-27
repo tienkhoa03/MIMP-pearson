@@ -8,7 +8,7 @@ import os
 import glob
 
 # Find all result files with pearson in the name
-result_files = glob.glob("./exp_results/pearson_ICU_*_pearson_*.csv")
+result_files = glob.glob("./exp_results/pearson_ICU_10_SAGE++DAMC_incre_alone_window_2_epoch_200_eval_0.1_pearson_*.csv")
 
 if not result_files:
     print("No result files found. Please run experiments first.")

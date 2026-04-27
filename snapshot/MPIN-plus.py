@@ -556,7 +556,10 @@ if args.dataset in ["KDM", "WDS", "LHS"]:
     )
     base_X_mask = (~np.isnan(base_X)).astype(int)
     # base_X = StandardScaler().fit_transform(base_X)
-    base_X = np.nan_to_num(base_X, nan=0)
+    # Điền giá trị khuyết bằng mean của từng feature (theo chiều cột)
+    feature_means = np.nanmean(base_X, axis=0)  # Tính mean cho mỗi feature, bỏ qua NaN
+    for col in range(base_X.shape[1]):
+        base_X[np.isnan(base_X[:, col]), col] = feature_means[col]
     mean_X = np.mean(base_X)
     print("mean_X", mean_X)
     std_X = np.std(base_X)
@@ -572,7 +575,10 @@ elif args.dataset == "ICU":
     print("dataset:physionet")
     base_X = load_ICU_dataset(window=args.window, method="mpin", stream=args.stream)
     base_X_mask = (~np.isnan(base_X)).astype(int)
-    base_X = np.nan_to_num(base_X)
+    # Điền giá trị khuyết bằng mean của từng feature (theo chiều cột)
+    feature_means = np.nanmean(base_X, axis=0)  # Tính mean cho mỗi feature, bỏ qua NaN
+    for col in range(base_X.shape[1]):
+        base_X[np.isnan(base_X[:, col]), col] = feature_means[col]
     mean_X = np.mean(base_X)
     print("mean_X", mean_X)
     std_X = np.std(base_X)
@@ -586,7 +592,10 @@ elif args.dataset == "Airquality":
         window=args.window, method="mpin", stream=args.stream
     )
     base_X_mask = (~np.isnan(base_X)).astype(int)
-    base_X = np.nan_to_num(base_X)
+    # Điền giá trị khuyết bằng mean của từng feature (theo chiều cột)
+    feature_means = np.nanmean(base_X, axis=0)  # Tính mean cho mỗi feature, bỏ qua NaN
+    for col in range(base_X.shape[1]):
+        base_X[np.isnan(base_X[:, col]), col] = feature_means[col]
     mean_X = np.mean(base_X)
     print("mean_X", mean_X)
     std_X = np.std(base_X)

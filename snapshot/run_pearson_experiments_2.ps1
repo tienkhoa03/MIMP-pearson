@@ -21,14 +21,14 @@ foreach ($delta in $deltas) {
     
     # Run the experiment
     python MPIN-plus.py `
-        --dataset KDM `
+        --dataset ICU `
         --k 10 `
         --epochs 200 `
         --prefix pearson `
         --num_of_iter 5 `
         --base SAGE++DAMC `
         --use_pearson true `
-        --eval_ratio 0.1 `
+        --eval_ratio 0.3 `
         --stream 1 `
         --delta $delta
     
