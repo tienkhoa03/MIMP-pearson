@@ -1,4 +1,7 @@
 pip install torch-scatter torch-sparse torch-cluster torch-spline-conv -f https://data.pyg.org/whl/torch-2.4.1+cu121.html
+pip install torch-geometric
+
+python MPIN-plus.py --dataset KDM --k 10 --epochs 200 --prefix pearson --num_of_iter 1 --base SAGE++DAMC --use_pearson true --eval_ratio 0.1 --stream 1 --delta 0.4 --window 60
 
 Building wheels for collected packages: torch-sparse
   Building wheel for torch-sparse (setup.py) ... error
