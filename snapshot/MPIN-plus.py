@@ -31,6 +31,7 @@ from utils.load_dataset import (
     load_ICU_dataset,
     load_airquality_dataset,
     load_WiFi_dataset,
+    load_weather_dataset,
     get_model_size,
 )
 from pypots.utils.metrics import cal_mae, cal_mse, cal_mre
@@ -108,13 +109,13 @@ def build_GNN_static(in_channels, out_channels, k, base):
 
 def get_similarity_graph_snapshot(X, k=10, delta=0.3, window_length=2):
     edge_index, _ = get_similarity_graph(
-        X,
+        X.detach().cpu(),
         window_length=window_length,
         k=k,
         delta=delta,
         layout="stream_major",
     )
-    return edge_index
+    return edge_index.to(X.device)
 
 
 def get_window_data(start, end, ratio):
@@ -555,6 +556,22 @@ elif args.dataset == "Airquality":
     print("std_X", std_X)
     base_X = (base_X - mean_X) / std_X
     print("base Airquality data shape:", base_X.shape, base_X_mask.shape)
+
+elif args.dataset in ["Weather", "weather"]:
+    print("dataset:Weather")
+    base_X = load_weather_dataset(window=args.window, method="mpin", stream=args.stream)
+    base_X_mask = (~np.isnan(base_X)).astype(int)
+    base_X = base_X.copy()
+    # Fill missing values with mean per feature
+    feature_means = np.nanmean(base_X, axis=0)
+    for col in range(base_X.shape[1]):
+        base_X[np.isnan(base_X[:, col]), col] = feature_means[col]
+    mean_X = np.mean(base_X)
+    print("mean_X", mean_X)
+    std_X = np.std(base_X)
+    print("std_X", std_X)
+    base_X = (base_X - mean_X) / std_X
+    print("base Weather data shape:", base_X.shape, base_X_mask.shape)
 
 # elif args.dataset == 'ICU':
 #     print('dataset:physionet')

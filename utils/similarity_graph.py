@@ -1,6 +1,16 @@
 import torch
 
 
+def _get_stream_nodes(stream_idx, num_nodes, window_length, layout, num_streams, device):
+    if layout == "stream_major":
+        start = stream_idx * window_length
+        end = start + window_length
+        return torch.arange(start, end, device=device)
+    if layout == "time_major":
+        return torch.arange(stream_idx, num_nodes, num_streams, device=device)
+    raise ValueError("layout must be 'stream_major' or 'time_major'")
+
+
 def compute_stream_pearson(X, window_length, layout="stream_major"):
     if window_length <= 0:
         raise ValueError("window_length must be positive")
@@ -40,9 +50,10 @@ def build_similarity_graph(
 ):
     X = X.contiguous()
     num_nodes, _ = X.shape
+    device = X.device
 
     if num_nodes <= 1 or k <= 0:
-        return torch.empty((2, 0), dtype=torch.long, device=X.device)
+        return torch.empty((2, 0), dtype=torch.long, device=device)
 
     if num_nodes % window_length != 0:
         raise ValueError("num_nodes must be divisible by window_length")
@@ -51,34 +62,59 @@ def build_similarity_graph(
     if pearson_matrix.shape[0] != num_streams:
         raise ValueError("pearson_matrix size does not match stream count")
 
-    if layout == "stream_major":
-        stream_id = torch.arange(num_nodes, device=X.device) // window_length
-    elif layout == "time_major":
-        stream_id = torch.arange(num_nodes, device=X.device) % num_streams
-    else:
-        raise ValueError("layout must be 'stream_major' or 'time_major'")
-
     pearson_mask = pearson_matrix.abs() >= delta
-    mask = pearson_mask[stream_id][:, stream_id]
+    edge_src = []
+    edge_dst = []
 
-    distances = torch.cdist(X, X, p=2)
-    distances = distances.masked_fill(~mask, float("inf"))
-    distances.fill_diagonal_(float("inf"))
+    for stream_idx in range(num_streams):
+        source_nodes = _get_stream_nodes(
+            stream_idx, num_nodes, window_length, layout, num_streams, device
+        )
 
-    k_eff = min(k, num_nodes - 1)
-    topk_vals, topk_idx = torch.topk(distances, k_eff, dim=1, largest=False)
-    valid = torch.isfinite(topk_vals)
+        allowed_streams = torch.nonzero(pearson_mask[stream_idx], as_tuple=False).flatten()
+        if allowed_streams.numel() == 0:
+            continue
 
-    if not valid.any():
-        return torch.empty((2, 0), dtype=torch.long, device=X.device)
+        candidate_nodes = []
+        for candidate_stream in allowed_streams.tolist():
+            if candidate_stream == stream_idx:
+                continue
+            candidate_nodes.append(
+                _get_stream_nodes(
+                    candidate_stream,
+                    num_nodes,
+                    window_length,
+                    layout,
+                    num_streams,
+                    device,
+                )
+            )
 
-    src = torch.arange(num_nodes, device=X.device).unsqueeze(1).expand(-1, k_eff)
-    src = src.reshape(-1)
-    dst = topk_idx.reshape(-1)
-    valid_flat = valid.reshape(-1)
+        if not candidate_nodes:
+            continue
 
-    edge_index = torch.stack([src[valid_flat], dst[valid_flat]], dim=0)
-    return edge_index
+        candidate_nodes = torch.cat(candidate_nodes, dim=0)
+        if candidate_nodes.numel() == 0:
+            continue
+
+        distances = torch.cdist(X[source_nodes], X[candidate_nodes], p=2)
+        k_eff = min(k, candidate_nodes.numel())
+        topk_vals, topk_idx = torch.topk(distances, k_eff, dim=1, largest=False)
+        valid = torch.isfinite(topk_vals)
+        if not valid.any():
+            continue
+
+        src = source_nodes.unsqueeze(1).expand(-1, k_eff).reshape(-1)
+        dst = candidate_nodes[topk_idx.reshape(-1)]
+        valid_flat = valid.reshape(-1)
+
+        edge_src.append(src[valid_flat])
+        edge_dst.append(dst[valid_flat])
+
+    if not edge_src:
+        return torch.empty((2, 0), dtype=torch.long, device=device)
+
+    return torch.stack([torch.cat(edge_src), torch.cat(edge_dst)], dim=0)
 
 
 def get_similarity_graph(
@@ -89,10 +125,15 @@ def get_similarity_graph(
     layout="stream_major",
     pearson_matrix=None,
 ):
+    original_device = X.device
+    X = X.detach().cpu()
+
     if pearson_matrix is None:
         pearson_matrix, _ = compute_stream_pearson(
             X, window_length=window_length, layout=layout
         )
+    else:
+        pearson_matrix = pearson_matrix.detach().cpu()
 
     edge_index = build_similarity_graph(
         X,
@@ -102,4 +143,4 @@ def get_similarity_graph(
         delta=delta,
         layout=layout,
     )
-    return edge_index, pearson_matrix
+    return edge_index.to(original_device), pearson_matrix

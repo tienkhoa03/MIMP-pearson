@@ -9,6 +9,7 @@
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
+$env:PYTORCH_CUDA_ALLOC_CONF = "expandable_segments:True,max_split_size_mb:128"
 
 Push-Location $PSScriptRoot
 try {

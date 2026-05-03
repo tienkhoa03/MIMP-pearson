@@ -299,6 +299,91 @@ def load_airquality_dataset_all(method='saits', stream=1):
         return X.reshape(-1, num_of_channels)
 
 
+def load_weather_dataset(window=2, method='saits', stream=1):
+    # Load Vietnam weather dataset from ../data/weather.csv
+    df = pd.read_csv('../data/weather.csv')
+
+    # Parse date and ensure proper types
+    df['date'] = pd.to_datetime(df['date'], format='%Y-%m-%d', errors='coerce')
+    df = df.dropna(subset=['date', 'province']).reset_index(drop=True)
+
+    # Map wind direction codes to degrees (center angles)
+    wind_dir_map = {
+        'N': 0.0,
+        'NNE': 22.5,
+        'NE': 45.0,
+        'ENE': 67.5,
+        'E': 90.0,
+        'ESE': 112.5,
+        'SE': 135.0,
+        'SSE': 157.5,
+        'S': 180.0,
+        'SSW': 202.5,
+        'SW': 225.0,
+        'WSW': 247.5,
+        'W': 270.0,
+        'WNW': 292.5,
+        'NW': 315.0,
+        'NNW': 337.5,
+    }
+
+    # Select numeric feature columns and convert
+    features = ['max', 'min', 'wind', 'rain', 'humidi', 'cloud', 'pressure']
+    # Create numeric wind direction column
+    df['wind_dir_deg'] = df['wind_d'].map(wind_dir_map)
+    features.insert(3, 'wind_dir_deg')
+
+    # Ensure numeric conversion
+    for c in features:
+        df[c] = pd.to_numeric(df[c], errors='coerce')
+
+    # Collect per-province sequences, trim to multiples of window
+    seqs = []
+    for _, g in df.groupby('province'):
+        g = g.sort_values('date')
+        arr = g[features].to_numpy()
+        if arr.shape[0] < window:
+            continue
+        n = arr.shape[0] // window
+        arr = arr[: n * window, :]
+        seqs.append(arr)
+
+    if len(seqs) == 0:
+        return np.zeros((0, len(features))) if method != 'saits' else np.zeros((0, window, len(features)))
+
+    global_arr = np.vstack(seqs)
+
+    # Fill missing values with column means before scaling
+    col_means = np.nanmean(global_arr, axis=0)
+    inds = np.where(np.isnan(global_arr))
+    if inds[0].size > 0:
+        global_arr[inds] = np.take(col_means, inds[1])
+
+    num_of_channels = global_arr.shape[1]
+
+    if method == 'saits':
+        global_arr = StandardScaler().fit_transform(global_arr)
+        X = global_arr.reshape(-1, window, num_of_channels)
+        num_samples = X.shape[0]
+        np.random.shuffle(X)
+        X = X[: int(num_samples * stream), :window, :]
+        return X
+    else:
+        global_arr = StandardScaler().fit_transform(global_arr)
+        X = global_arr.reshape(-1, window, num_of_channels)
+        return X.reshape(-1, num_of_channels)
+
+
+def load_weather_dataset_all(method='saits', stream=1):
+    # Return transposed version suitable for _all variants used elsewhere
+    X = load_weather_dataset(window=2, method=method, stream=stream)
+    if method == 'saits':
+        # transpose to (window, num_samples, channels) as some callers expect
+        return np.transpose(X, (1, 0, 2))
+    else:
+        return X
+
+
 # a = load_airquality_dataset()
 
 # load_ICU_dataset()
