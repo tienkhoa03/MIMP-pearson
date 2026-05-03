@@ -1,1 +1,63 @@
 pip install torch-scatter torch-sparse torch-cluster torch-spline-conv -f https://data.pyg.org/whl/torch-2.4.1+cu121.html
+
+Building wheels for collected packages: torch-sparse
+  Building wheel for torch-sparse (setup.py) ... error
+  error: subprocess-exited-with-error
+
+  × python setup.py bdist_wheel did not run successfully.
+  │ exit code: 1
+  ╰─> [47 lines of output]
+      running bdist_wheel
+      running build
+      running build_py
+      creating build\lib.win-amd64-cpython-38\torch_sparse
+      copying torch_sparse\add.py -> build\lib.win-amd64-cpython-38\torch_sparse
+      copying torch_sparse\bandwidth.py -> build\lib.win-amd64-cpython-38\torch_sparse
+      copying torch_sparse\cat.py -> build\lib.win-amd64-cpython-38\torch_sparse
+      copying torch_sparse\coalesce.py -> build\lib.win-amd64-cpython-38\torch_sparse
+      copying torch_sparse\convert.py -> build\lib.win-amd64-cpython-38\torch_sparse
+      copying torch_sparse\diag.py -> build\lib.win-amd64-cpython-38\torch_sparse
+      copying torch_sparse\eye.py -> build\lib.win-amd64-cpython-38\torch_sparse
+      copying torch_sparse\index_select.py -> build\lib.win-amd64-cpython-38\torch_sparse
+      copying torch_sparse\masked_select.py -> build\lib.win-amd64-cpython-38\torch_sparse
+      copying torch_sparse\matmul.py -> build\lib.win-amd64-cpython-38\torch_sparse
+      copying torch_sparse\metis.py -> build\lib.win-amd64-cpython-38\torch_sparse
+      copying torch_sparse\mul.py -> build\lib.win-amd64-cpython-38\torch_sparse
+      copying torch_sparse\narrow.py -> build\lib.win-amd64-cpython-38\torch_sparse
+      copying torch_sparse\padding.py -> build\lib.win-amd64-cpython-38\torch_sparse
+      copying torch_sparse\permute.py -> build\lib.win-amd64-cpython-38\torch_sparse
+      copying torch_sparse\reduce.py -> build\lib.win-amd64-cpython-38\torch_sparse
+      copying torch_sparse\rw.py -> build\lib.win-amd64-cpython-38\torch_sparse
+      copying torch_sparse\saint.py -> build\lib.win-amd64-cpython-38\torch_sparse
+      copying torch_sparse\sample.py -> build\lib.win-amd64-cpython-38\torch_sparse
+      copying torch_sparse\select.py -> build\lib.win-amd64-cpython-38\torch_sparse
+      copying torch_sparse\spadd.py -> build\lib.win-amd64-cpython-38\torch_sparse
+      copying torch_sparse\spmm.py -> build\lib.win-amd64-cpython-38\torch_sparse
+      copying torch_sparse\spspmm.py -> build\lib.win-amd64-cpython-38\torch_sparse
+      copying torch_sparse\storage.py -> build\lib.win-amd64-cpython-38\torch_sparse
+      copying torch_sparse\tensor.py -> build\lib.win-amd64-cpython-38\torch_sparse
+      copying torch_sparse\transpose.py -> build\lib.win-amd64-cpython-38\torch_sparse
+      copying torch_sparse\utils.py -> build\lib.win-amd64-cpython-38\torch_sparse
+      copying torch_sparse\__init__.py -> build\lib.win-amd64-cpython-38\torch_sparse
+      running egg_info
+      writing torch_sparse.egg-info\PKG-INFO
+      writing dependency_links to torch_sparse.egg-info\dependency_links.txt
+      writing requirements to torch_sparse.egg-info\requires.txt
+      writing top-level names to torch_sparse.egg-info\top_level.txt
+      reading manifest file 'torch_sparse.egg-info\SOURCES.txt'
+      reading manifest template 'MANIFEST.in'
+      warning: no previously-included files matching '*' found under directory 'test'
+      adding license file 'LICENSE'
+      writing manifest file 'torch_sparse.egg-info\SOURCES.txt'
+      running build_ext
+      c:\users\administrator\documents\mimp-pearson\venv\lib\site-packages\torch\utils\cpp_extension.py:380: UserWarning: Error checking compiler version for cl: [WinError 2] The system cannot find the file specified
+        warnings.warn(f'Error checking compiler version for {compiler}: {error}')
+      building 'torch_sparse._convert_cpu' extension
+      error: Microsoft Visual C++ 14.0 or greater is required. Get it with "Microsoft C++ Build Tools": https://visualstudio.microsoft.com/visual-cpp-build-tools/
+      [end of output]
+
+  note: This error originates from a subprocess, and is likely not a problem with pip.
+  ERROR: Failed building wheel for torch-sparse
+  Running setup.py clean for torch-sparse
+Failed to build torch-sparse
+ERROR: Failed to build installable wheels for some pyproject.toml based projects (torch-sparse)
