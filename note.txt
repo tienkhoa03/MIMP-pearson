@@ -117,11 +117,85 @@ Failed to build torch-sparse
 ERROR: Failed to build installable wheels for some pyproject.toml based projects (torch-sparse)
 
 
+pip install pandas==1.1.3
+Collecting pandas==1.1.3
+  Using cached pandas-1.1.3.tar.gz (5.2 MB)
+  Installing build dependencies ... error
+  error: subprocess-exited-with-error
 
+  × installing build dependencies for pandas did not run successfully.
+  │ exit code: 1
+  ╰─> [61 lines of output]
+      Ignoring numpy: markers 'python_version == "3.6" and platform_system != "AIX"' don't match your environment
+      Ignoring numpy: markers 'python_version == "3.7" and platform_system != "AIX"' don't match your environment
+      Ignoring numpy: markers 'python_version == "3.6" and platform_system == "AIX"' don't match your environment
+      Ignoring numpy: markers 'python_version == "3.7" and platform_system == "AIX"' don't match your environment
+      Ignoring numpy: markers 'python_version >= "3.8" and platform_system == "AIX"' don't match your environment
+      Collecting setuptools
+        Using cached setuptools-82.0.1-py3-none-any.whl.metadata (6.5 kB)
+      Collecting wheel
+        Using cached wheel-0.47.0-py3-none-any.whl.metadata (2.3 kB)
+      Collecting Cython<3,>=0.29.21
+        Using cached Cython-0.29.37-py2.py3-none-any.whl.metadata (3.1 kB)
+      Collecting numpy==1.17.3
+        Using cached numpy-1.17.3.zip (6.4 MB)
+        Installing build dependencies: started
+        Installing build dependencies: finished with status 'done'
+        Getting requirements to build wheel: started
+        Getting requirements to build wheel: finished with status 'done'
+        Preparing metadata (pyproject.toml): started
+        Preparing metadata (pyproject.toml): finished with status 'error'
+        error: subprocess-exited-with-error
+
+        Preparing metadata (pyproject.toml) did not run successfully.
+        exit code: 1
+
+        [25 lines of output]
+        Running from numpy source directory.
+        <string>:418: UserWarning: Unrecognized setuptools command, proceeding with generating Cython sources and expanding templates
+        Traceback (most recent call last):
+          File "C:\Users\Administrator\Documents\MIMP-pearson\venv311\Lib\site-packages\pip\_vendor\pyproject_hooks\_in_process\_in_process.py", line 389, in <module>
+            main()
+          File "C:\Users\Administrator\Documents\MIMP-pearson\venv311\Lib\site-packages\pip\_vendor\pyproject_hooks\_in_process\_in_process.py", line 373, in main
+            json_out["return_val"] = hook(**hook_input["kwargs"])
+                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+          File "C:\Users\Administrator\Documents\MIMP-pearson\venv311\Lib\site-packages\pip\_vendor\pyproject_hooks\_in_process\_in_process.py", line 175, in prepare_metadata_for_build_wheel
+            return hook(metadata_directory, config_settings)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+          File "C:\Users\Administrator\AppData\Local\Temp\pip-build-env-wbnofq63\overlay\Lib\site-packages\setuptools\build_meta.py", line 380, in prepare_metadata_for_build_wheel
+            self.run_setup()
+          File "C:\Users\Administrator\AppData\Local\Temp\pip-build-env-wbnofq63\overlay\Lib\site-packages\setuptools\build_meta.py", line 520, in run_setup
+            super().run_setup(setup_script=setup_script)
+          File "C:\Users\Administrator\AppData\Local\Temp\pip-build-env-wbnofq63\overlay\Lib\site-packages\setuptools\build_meta.py", line 317, in run_setup
+            exec(code, locals())
+          File "<string>", line 443, in <module>
+          File "<string>", line 422, in setup_package
+          File "C:\Users\Administrator\AppData\Local\Temp\pip-install-g0ijfcuy\numpy_057f2047d1224ff58e587a80f04476fb\numpy\distutils\__init__.py", line 6, in <module>
+            from . import ccompiler
+          File "C:\Users\Administrator\AppData\Local\Temp\pip-install-g0ijfcuy\numpy_057f2047d1224ff58e587a80f04476fb\numpy\distutils\ccompiler.py", line 111, in <module>
+            replace_method(CCompiler, 'find_executables', CCompiler_find_executables)
+                           ^^^^^^^^^
+        NameError: name 'CCompiler' is not defined. Did you mean: 'ccompiler'?
+        [end of output]
+
+        note: This error originates from a subprocess, and is likely not a problem with pip.
+      error: metadata-generation-failed
+
+      Encountered error while generating package metadata.
+
+      numpy
+
+      note: This is an issue with the package mentioned above, not pip.
+      hint: See above for details.
+      [end of output]
+
+  note: This error originates from a subprocess, and is likely not a problem with pip.
+ERROR: Failed to build 'pandas' when installing build dependencies for pandas
 --------------------
 python -m pip install --upgrade pip setuptools wheel
 pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu126
 pip install torch-scatter torch-sparse torch-cluster torch-spline-conv -f https://data.pyg.org/whl/torch-2.11.0+cu126.html
+pip install torch-geometric
 pip install -r requirements.txt
 pip install --no-deps pypots
 pip install pycorruptor

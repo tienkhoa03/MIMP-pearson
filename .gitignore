@@ -9,3 +9,5 @@ exp_results/*
 .python-version
 
 venv/*
+
+venv311/*
