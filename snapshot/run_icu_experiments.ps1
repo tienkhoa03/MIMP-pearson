@@ -21,10 +21,10 @@ try {
     $window = 4
     $bases = @("SAGE++DAC", "SAGE++DAMC")
     $evalRatios = @(0.1, 0.3, 0.5)
-    $deltas = @(0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9)
+    $deltas = @(0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9)
 
     $epochs = 200
-    $numIter = 5
+    $numIter = 1
     $k = 10
     $stream = 1
 
