@@ -1,7 +1,58 @@
 pip install torch-scatter torch-sparse torch-cluster torch-spline-conv -f https://data.pyg.org/whl/torch-2.4.1+cu121.html
 pip install torch-geometric
 
-python MPIN-plus.py --dataset KDM --k 10 --epochs 200 --prefix pearson --num_of_iter 1 --base SAGE++DAMC --use_pearson true --eval_ratio 0.1 --stream 1 --delta 0.4 --window 60
+python MPIN-plus.py --dataset Airquality --k 10 --epochs 200 --prefix pearson --num_of_iter 1 --base SAGE++DAMC --use_pearson true --eval_ratio 0.1 --stream 1 --delta 0.4 --window 2
+
+C:\Users\Administrator\Documents\MIMP-pearson\venv\lib\site-packages\torch\cuda\__init__.py:230: UserWarning:
+NVIDIA GeForce RTX 5060 Ti with CUDA capability sm_120 is not compatible with the current PyTorch installation.
+The current PyTorch install supports CUDA capabilities sm_50 sm_60 sm_61 sm_70 sm_75 sm_80 sm_86 sm_90.
+If you want to use the NVIDIA GeForce RTX 5060 Ti GPU with PyTorch, please check the instructions at https://pytorch.org/get-started/locally/
+
+  warnings.warn(
+Using CUDA GPU: NVIDIA GeForce RTX 5060 Ti
+dataset:Airquality
+Dataset beijing_multisite_air_quality has already been downloaded. Processing directly...
+Dataset beijing_multisite_air_quality has already been cached. Loading from cache directly...
+Loaded successfully!
+X original: (420768, 18)
+X grouped (420768, 18)
+mean_X 246.57007731137014
+std_X 595.9105781693808
+base Airquality data shape: (35064, 11) (35064, 11)
+which time window:0
+window_X: (35064, 11) (35064, 11)
+rows, cols: 380668 380668
+in_channels: 11
+dynamic false: false
+number of trainable parameters: 545547
+Filling missing values with feature means from observed values...
+  Feature 0: filled with mean = -0.267782
+  Feature 1: filled with mean = -0.224001
+  Feature 2: filled with mean = -0.388469
+  Feature 3: filled with mean = -0.318242
+  Feature 4: filled with mean = 1.890466
+  Feature 5: filled with mean = -0.346502
+  Feature 6: filled with mean = -0.395275
+  Feature 7: filled with mean = 1.283029
+  Feature 8: filled with mean = -0.408532
+  Feature 9: filled with mean = -0.413670
+  Feature 10: filled with mean = -0.411520
+Using Pearson-filtered graph construction...
+Traceback (most recent call last):
+  File "MPIN-plus.py", line 598, in <module>
+    mask_last, window_results = window_imputation(
+  File "MPIN-plus.py", line 265, in window_imputation
+    edge_index = get_similarity_graph_snapshot(
+  File "MPIN-plus.py", line 110, in get_similarity_graph_snapshot
+    edge_index, _ = get_similarity_graph(
+  File "C:\Users\Administrator\Documents\MIMP-pearson\snapshot\..\utils\similarity_graph.py", line 93, in get_similarity_graph
+    pearson_matrix, _ = compute_stream_pearson(
+  File "C:\Users\Administrator\Documents\MIMP-pearson\snapshot\..\utils\similarity_graph.py", line 24, in compute_stream_pearson
+    mean = X_stream_flat.mean(dim=1, keepdim=True)
+RuntimeError: CUDA error: no kernel image is available for execution on the device
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
 
 Building wheels for collected packages: torch-sparse
   Building wheel for torch-sparse (setup.py) ... error
