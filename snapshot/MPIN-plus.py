@@ -37,6 +37,7 @@ from pypots.utils.metrics import cal_mae, cal_mse, cal_mre
 
 from sklearn.preprocessing import StandardScaler
 from scipy.stats import pearsonr
+from utils.similarity_graph import get_similarity_graph
 
 
 
@@ -105,106 +106,15 @@ def build_GNN_static(in_channels, out_channels, k, base):
     return gnn
 
 
-def build_graph_with_pearson_filter(X, X_mask, k=10, delta=0.3):
-    """
-    Build graph using 2-step approach:
-    Step 1: Filter by Pearson correlation
-    Step 2: KNN on filtered candidates
-    
-    Args:
-        X: torch.Tensor [N, D] - Node features
-        X_mask: torch.Tensor [N, D] - Mask (1=observed, 0=missing)
-        k: int - Number of nearest neighbors
-        delta: float - Pearson correlation threshold (0-1)
-    
-    Returns:
-        edge_index: torch.Tensor [2, E] - Graph edges
-    """
-    N, D = X.shape
-    X_np = X.cpu().numpy()
-    X_mask_np = X_mask.cpu().numpy()
-    
-    # Step 1: Calculate Pearson correlation matrix (OPTIMIZED)
-    print(f"Step 1: Computing Pearson correlation (delta={delta})...")
-    print(f"   Processing {N} nodes ({N*(N-1)//2} pairs)...")
-    
-    # Standardize data (zero mean, unit variance)
-    X_std = np.copy(X_np)
-    means = np.mean(X_std, axis=1, keepdims=True)
-    stds = np.std(X_std, axis=1, keepdims=True)
-    stds[stds == 0] = 1  # Avoid division by zero
-    X_std = (X_std - means) / stds
-    
-    # Vectorized correlation computation
-    # corr(i,j) = (X_i @ X_j.T) / D
-    correlation_matrix = np.dot(X_std, X_std.T) / D
-    
-    # Apply mask filter: only consider pairs with enough common observed values
-    min_common = 3
-    common_counts = np.dot(X_mask_np, X_mask_np.T)  # Count common observed features
-    
-    # Filter by: 1) enough common values, 2) correlation threshold
-    valid_pairs = (common_counts >= min_common) & (np.abs(correlation_matrix) >= delta)
-    
-    # Remove self-connections
-    np.fill_diagonal(valid_pairs, False)
-    
-    print(f"   Valid pairs after Pearson filter: {np.sum(valid_pairs) // 2} / {N*(N-1)//2}")
-    
-    # Step 2: KNN on filtered candidates (OPTIMIZED)
-    print(f"Step 2: Building KNN graph (k={k})...")
-    
-    edges = []
-    
-    # Pre-compute squared norms for all nodes (optimization)
-    X_squared_norms = np.sum(X_np ** 2, axis=1)  # Shape: [N]
-    
-    for i in range(N):
-        # Get candidate neighbors (passed Pearson filter)
-        candidates = np.where(valid_pairs[i])[0]
-        
-        if len(candidates) == 0:
-            # If no valid candidates, fall back to regular KNN
-            candidates = np.arange(N)
-            candidates = candidates[candidates != i]
-        else:
-            # Remove self if present
-            candidates = candidates[candidates != i]
-        
-        if len(candidates) == 0:
-            continue
-        
-        # Vectorized distance computation
-        # dist(i,j)^2 = ||x_i||^2 + ||x_j||^2 - 2*x_i·x_j
-        xi = X_np[i]  # Shape: [D]
-        X_candidates = X_np[candidates]  # Shape: [C, D]
-        
-        # Compute distances using vectorized operations
-        dot_products = np.dot(X_candidates, xi)  # Shape: [C]
-        squared_distances = X_squared_norms[i] + X_squared_norms[candidates] - 2 * dot_products
-        squared_distances = np.maximum(squared_distances, 0)  # Avoid negative due to numerical errors
-        distances = np.sqrt(squared_distances)  # Shape: [C]
-        
-        # Get top k neighbors using argpartition (faster than full sort)
-        if len(distances) <= k:
-            neighbors = candidates
-        else:
-            # argpartition is O(n) vs O(n log n) for argsort
-            top_k_indices = np.argpartition(distances, k)[:k]
-            neighbors = candidates[top_k_indices]
-        
-        # Add edges
-        for j in neighbors:
-            edges.append([i, j])
-    
-    if len(edges) == 0:
-        print("   Warning: No edges found! Falling back to regular KNN...")
-        edge_index = knn_graph(X, k, batch=None, loop=False, cosine=False)
-    else:
-        edge_index = torch.tensor(edges, dtype=torch.long).t().contiguous()
-        print(f"   Created graph with {edge_index.shape[1]} edges")
-    
-    return edge_index.to(X.device)
+def get_similarity_graph_snapshot(X, k=10, delta=0.3, window_length=2):
+    edge_index, _ = get_similarity_graph(
+        X,
+        window_length=window_length,
+        k=k,
+        delta=delta,
+        layout="stream_major",
+    )
+    return edge_index
 
 
 def get_window_data(start, end, ratio):
@@ -351,7 +261,16 @@ def window_imputation(
     # Build graph with Pearson filtering if enabled
     if args.use_pearson == "true":
         print("Using Pearson-filtered graph construction...")
-        edge_index = build_graph_with_pearson_filter(X_knn, X_mask, k=args.k, delta=args.delta)
+        try:
+            edge_index = get_similarity_graph_snapshot(
+                X_knn, k=args.k, delta=args.delta, window_length=args.window
+            )
+            if edge_index.numel() == 0:
+                print("Warning: No edges after Pearson filter; using standard KNN.")
+                edge_index = knn_graph(X_knn, args.k, batch=None, loop=False, cosine=False)
+        except ValueError as exc:
+            print(f"Pearson graph fallback to KNN: {exc}")
+            edge_index = knn_graph(X_knn, args.k, batch=None, loop=False, cosine=False)
     else:
         print("Using standard KNN graph construction...")
         edge_index = knn_graph(X_knn, args.k, batch=None, loop=False, cosine=False)

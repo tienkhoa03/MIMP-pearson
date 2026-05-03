@@ -12,13 +12,27 @@ import copy
 import numpy as np
 import random
 from datetime import datetime
-from utils.DynamicGNN import DynamicGCN, DynamicGAT, DynamicGraphSAGE, StaticGCN, StaticGraphSAGE, StaticGAT
+from utils.DynamicGNN import (
+    DynamicGCN,
+    DynamicGAT,
+    DynamicGraphSAGE,
+    DynamicGraphSAGEPlusDA,
+    DynamicGraphSAGEPlusDAC,
+    DynamicGraphSAGEPlusDAMC,
+    StaticGCN,
+    StaticGraphSAGE,
+    StaticGAT,
+    StaticGraphSAGEPlusDA,
+    StaticGraphSAGEPlusDAC,
+    StaticGraphSAGEPlusDAMC,
+)
 from argparse import ArgumentParser
 from torch_geometric.nn import knn_graph
 from utils.load_dataset import load_ICU_dataset_all, load_airquality_dataset_all, load_WiFi_dataset_all, get_model_size
 from pypots.utils.metrics import cal_mae, cal_mse, cal_mre
 from sklearn.preprocessing import StandardScaler
 from torch_geometric.utils import to_dense_adj
+from utils.similarity_graph import compute_stream_pearson, build_similarity_graph
 
 
 # x = F.relu(self.gc1(x, adj))
@@ -51,6 +65,9 @@ parser.add_argument("--lr", type=float, default=0.01)
 parser.add_argument("--weight_decay", type=float, default=0.1)
 parser.add_argument("--dynamic", type=str, default='false')
 parser.add_argument("--dataset", type=str, default='ICU')
+parser.add_argument("--delta", type=float, default=0.3, help="Pearson correlation threshold for graph filtering (0-1)")
+parser.add_argument("--use_pearson", type=str, default="false", help="Use Pearson-filtered graph construction")
+parser.add_argument("--pearson_alpha", type=float, default=0.6, help="EMA alpha for Pearson smoothing")
 
 
 args = parser.parse_args()
@@ -68,6 +85,21 @@ epochs = args.epochs
 print('state', args.state)
 print('thre', args.thre)
 print('now', datetime.now())
+
+
+class PearsonGraphState:
+    def __init__(self, alpha):
+        self.alpha = alpha
+        self.pearson_prev = None
+
+    def smooth(self, pearson_new):
+        if self.pearson_prev is None:
+            pearson_smoothed = pearson_new
+        else:
+            pearson_smoothed = self.alpha * pearson_new + (1 - self.alpha) * self.pearson_prev
+
+        self.pearson_prev = pearson_smoothed.detach()
+        return pearson_smoothed
 
 def data_transform(X, X_mask, eval_ratio=0.1):
     eval_mask = np.zeros(X_mask.shape)
@@ -144,6 +176,16 @@ def build_GNN(in_channels, out_channels, k, base):
         gnn = DynamicGCN(in_channels=in_channels, out_channels=out_channels, k=k).to(device)
     elif base == 'SAGE':
         gnn = DynamicGraphSAGE(in_channels=in_channels, out_channels=out_channels, k=k).to(device)
+    elif base == 'SAGE++DA':
+        gnn = DynamicGraphSAGEPlusDA(in_channels=in_channels, out_channels=out_channels, k=k).to(device)
+    elif base == 'SAGE++DAC':
+        gnn = DynamicGraphSAGEPlusDAC(in_channels=in_channels, out_channels=out_channels, k=k).to(device)
+    elif base == 'SAGE++DAMC':
+        gnn = DynamicGraphSAGEPlusDAMC(in_channels=in_channels, out_channels=out_channels, k=k).to(device)
+    elif base == 'SAGE++':
+        gnn = DynamicGraphSAGEPlusDAMC(in_channels=in_channels, out_channels=out_channels, k=k).to(device)
+    else:
+        raise ValueError(f"Unsupported base model: {base}")
 
     return gnn
 
@@ -154,6 +196,16 @@ def build_GNN_static(in_channels, out_channels, k, base):
         gnn = StaticGCN(in_channels=in_channels, out_channels=out_channels, k=k).to(device)
     elif base == 'SAGE':
         gnn = StaticGraphSAGE(in_channels=in_channels, out_channels=out_channels, k=k).to(device)
+    elif base == 'SAGE++DA':
+        gnn = StaticGraphSAGEPlusDA(in_channels=in_channels, out_channels=out_channels, k=k).to(device)
+    elif base == 'SAGE++DAC':
+        gnn = StaticGraphSAGEPlusDAC(in_channels=in_channels, out_channels=out_channels, k=k).to(device)
+    elif base == 'SAGE++DAMC':
+        gnn = StaticGraphSAGEPlusDAMC(in_channels=in_channels, out_channels=out_channels, k=k).to(device)
+    elif base == 'SAGE++':
+        gnn = StaticGraphSAGEPlusDAMC(in_channels=in_channels, out_channels=out_channels, k=k).to(device)
+    else:
+        raise ValueError(f"Unsupported base model: {base}")
     return gnn
 
 
@@ -163,7 +215,7 @@ def get_window_data(start, end, ratio):
     return X, X_mask
 
 
-def window_imputation(start, end, sample_ratio, initial_state_dict=None, X_last=None, mask_last=None, mae_last=None, transfer=False, state=args.state):
+def window_imputation(start, end, sample_ratio, initial_state_dict=None, X_last=None, mask_last=None, mae_last=None, transfer=False, state=args.state, graph_state=None):
 
     # ori_X, ori_X_mask = get_window_data(start=start, end=end, ratio=sample_ratio)
     # feature_dim = ori_X.shape[1]
@@ -330,7 +382,32 @@ def window_imputation(start, end, sample_ratio, initial_state_dict=None, X_last=
     # X_knn = X * X_mask
     X_knn = copy.deepcopy(X)
 
-    edge_index = knn_graph(X_knn, args.k, batch=None, loop=False, cosine=False)
+    if args.use_pearson == "true":
+        try:
+            pearson_new, _ = compute_stream_pearson(
+                X_knn, window_length=args.window, layout="time_major"
+            )
+            if graph_state is not None:
+                pearson_used = graph_state.smooth(pearson_new)
+            else:
+                pearson_used = pearson_new
+
+            edge_index = build_similarity_graph(
+                X_knn,
+                pearson_used,
+                window_length=args.window,
+                k=args.k,
+                delta=args.delta,
+                layout="time_major",
+            )
+            if edge_index.numel() == 0:
+                print("Warning: No edges after Pearson filter; using standard KNN.")
+                edge_index = knn_graph(X_knn, args.k, batch=None, loop=False, cosine=False)
+        except ValueError as exc:
+            print(f"Pearson graph fallback to KNN: {exc}")
+            edge_index = knn_graph(X_knn, args.k, batch=None, loop=False, cosine=False)
+    else:
+        edge_index = knn_graph(X_knn, args.k, batch=None, loop=False, cosine=False)
 
 
     # print('X X_mask shp:', X.shape, X_mask.shape)
@@ -504,34 +581,35 @@ iter_results_list = []
 
 for iteration in range(num_of_iteration):
     results_collect = []
+    graph_state = PearsonGraphState(args.pearson_alpha) if args.use_pearson == "true" else None
     for w in range(num_windows):
         print(f'which time window:{w}')
         if w == 0 :
-            window_best_state, X_last, mask_last, window_results, mae_last = window_imputation(start=w, end=w+1, sample_ratio=1/num_windows)
+            window_best_state, X_last, mask_last, window_results, mae_last = window_imputation(start=w, end=w+1, sample_ratio=1/num_windows, graph_state=graph_state)
             results_collect.append(window_results)
         else:
             if incre_mode == 'alone':
-                window_best_state, X_last, mask_last, window_results, mae_last = window_imputation(start=w, end=w+1, sample_ratio=1/num_windows)
+                window_best_state, X_last, mask_last, window_results, mae_last = window_imputation(start=w, end=w+1, sample_ratio=1/num_windows, graph_state=graph_state)
                 results_collect.append(window_results)
 
             elif incre_mode == 'data':
-                window_best_state, X_last, mask_last, window_results, mae_last = window_imputation(start=w, end=w + 1, sample_ratio=1/num_windows, X_last=X_last, mask_last=mask_last)
+                window_best_state, X_last, mask_last, window_results, mae_last = window_imputation(start=w, end=w + 1, sample_ratio=1/num_windows, X_last=X_last, mask_last=mask_last, graph_state=graph_state)
                 results_collect.append(window_results)
 
             elif incre_mode == 'state':
-                window_best_state, X_last, mask_last, window_results, mae_last = window_imputation(start=w, end=w + 1, sample_ratio=1/num_windows,initial_state_dict=window_best_state, mae_last=mae_last)
+                window_best_state, X_last, mask_last, window_results, mae_last = window_imputation(start=w, end=w + 1, sample_ratio=1/num_windows,initial_state_dict=window_best_state, mae_last=mae_last, graph_state=graph_state)
                 results_collect.append(window_results)
 
             elif incre_mode == 'state+transfer':
-                window_best_state, X_last, mask_last, window_results, mae_last = window_imputation(start=w, end=w + 1, sample_ratio=1/num_windows,initial_state_dict=window_best_state, transfer=True, mae_last=mae_last)
+                window_best_state, X_last, mask_last, window_results, mae_last = window_imputation(start=w, end=w + 1, sample_ratio=1/num_windows,initial_state_dict=window_best_state, transfer=True, mae_last=mae_last, graph_state=graph_state)
                 results_collect.append(window_results)
 
             elif incre_mode == 'data+state':
-                window_best_state, X_last, mask_last, window_results, mae_last = window_imputation(start=w, end=w+1, sample_ratio=1/num_windows, initial_state_dict=window_best_state, X_last=X_last, mask_last=mask_last, mae_last=mae_last)
+                window_best_state, X_last, mask_last, window_results, mae_last = window_imputation(start=w, end=w+1, sample_ratio=1/num_windows, initial_state_dict=window_best_state, X_last=X_last, mask_last=mask_last, mae_last=mae_last, graph_state=graph_state)
                 results_collect.append(window_results)
 
             elif incre_mode == 'data+state+transfer':
-                window_best_state, X_last, mask_last, window_results, mae_last = window_imputation(start=w, end=w+1, sample_ratio=1/num_windows, initial_state_dict=window_best_state, X_last=X_last, mask_last=mask_last, transfer=True, mae_last=mae_last)
+                window_best_state, X_last, mask_last, window_results, mae_last = window_imputation(start=w, end=w+1, sample_ratio=1/num_windows, initial_state_dict=window_best_state, X_last=X_last, mask_last=mask_last, transfer=True, mae_last=mae_last, graph_state=graph_state)
                 results_collect.append(window_results)
 
     df = pd.DataFrame(results_collect, index=range(num_windows), columns=results_schema)
