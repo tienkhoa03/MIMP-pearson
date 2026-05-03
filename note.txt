@@ -115,3 +115,13 @@ Building wheels for collected packages: torch-sparse
   Running setup.py clean for torch-sparse
 Failed to build torch-sparse
 ERROR: Failed to build installable wheels for some pyproject.toml based projects (torch-sparse)
+
+
+
+--------------------
+python -m pip install --upgrade pip setuptools wheel
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu126
+pip install torch-scatter torch-sparse torch-cluster torch-spline-conv -f https://data.pyg.org/whl/torch-2.11.0+cu126.html
+pip install -r requirements.txt
+pip install --no-deps pypots
+pip install pycorruptor
