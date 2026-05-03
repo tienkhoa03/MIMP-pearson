@@ -89,6 +89,113 @@ class DynamicGraphSAGE(pyg_nn.SAGEConv):
 
         return super().forward(x, edge_index)
 
+
+class DynamicGraphSAGEPlusDA(nn.Module):
+    """
+    Dynamic GraphSAGE++DA for imputation.
+    Applies mean/max aggregation on a graph built on the fly and returns a
+    projected node embedding.
+    """
+
+    def __init__(self, in_channels, out_channels, k=None, radius=None):
+        super(DynamicGraphSAGEPlusDA, self).__init__()
+        self.k = k
+        self.radius = radius
+
+        self.conv_mean = pyg_nn.SAGEConv(in_channels, out_channels, aggr='mean')
+        self.conv_max = pyg_nn.SAGEConv(in_channels, out_channels, aggr='max')
+        self.projection = nn.Linear(out_channels * 2, out_channels)
+
+    def forward(self, x, batch=None):
+        if self.k is not None:
+            edge_index = knn_graph(x, self.k, batch, loop=False, flow=self.flow)
+        elif self.radius is not None:
+            edge_index = radius_graph(x, self.radius, loop=False)
+        else:
+            raise ValueError("Either k or radius must be provided.")
+
+        x_mean = self.conv_mean(x, edge_index)
+        x_max = self.conv_max(x, edge_index)
+        x_concat = torch.cat([x_mean, x_max], dim=1)
+
+        return F.relu(self.projection(x_concat))
+
+
+class DynamicGraphSAGEPlusDAC(nn.Module):
+    """
+    Dynamic GraphSAGE++DAC for imputation.
+    Mean/max aggregation with a skip connection to the original input.
+    """
+
+    def __init__(self, in_channels, out_channels, k=None, radius=None):
+        super(DynamicGraphSAGEPlusDAC, self).__init__()
+        self.k = k
+        self.radius = radius
+
+        hidden_dim = out_channels
+
+        self.conv_mean = pyg_nn.SAGEConv(in_channels, hidden_dim, aggr='mean')
+        self.conv_max = pyg_nn.SAGEConv(in_channels, hidden_dim, aggr='max')
+        self.projection = nn.Linear(hidden_dim * 2 + in_channels, out_channels)
+
+    def forward(self, x, batch=None):
+        if self.k is not None:
+            edge_index = knn_graph(x, self.k, batch, loop=False, flow=self.flow)
+        elif self.radius is not None:
+            edge_index = radius_graph(x, self.radius, loop=False)
+        else:
+            raise ValueError("Either k or radius must be provided.")
+
+        x_mean = self.conv_mean(x, edge_index)
+        x_max = self.conv_max(x, edge_index)
+        x_concat = torch.cat([x_mean, x_max, x], dim=1)
+
+        return F.relu(self.projection(x_concat))
+
+
+class DynamicGraphSAGEPlusDAMC(nn.Module):
+    """
+    Dynamic GraphSAGE++DAMC for imputation.
+    Builds the graph on the fly, then applies two-hop mean/max aggregation with
+    multi-scale concatenation.
+    """
+
+    def __init__(self, in_channels, out_channels, k=None, radius=None):
+        super(DynamicGraphSAGEPlusDAMC, self).__init__()
+        self.k = k
+        self.radius = radius
+
+        hidden_dim = out_channels // 2 if out_channels >= 64 else 32
+
+        self.conv1_mean = pyg_nn.SAGEConv(in_channels, hidden_dim, aggr='mean')
+        self.conv1_max = pyg_nn.SAGEConv(in_channels, hidden_dim, aggr='max')
+        self.conv2_mean = pyg_nn.SAGEConv(hidden_dim * 2, hidden_dim, aggr='mean')
+        self.conv2_max = pyg_nn.SAGEConv(hidden_dim * 2, hidden_dim, aggr='max')
+        self.projection = nn.Linear(in_channels + hidden_dim * 4, out_channels)
+
+    def forward(self, x, batch=None):
+        if self.k is not None:
+            edge_index = knn_graph(x, self.k, batch, loop=False, flow=self.flow)
+        elif self.radius is not None:
+            edge_index = radius_graph(x, self.radius, loop=False)
+        else:
+            raise ValueError("Either k or radius must be provided.")
+
+        x_input = x
+
+        x1_mean = F.relu(self.conv1_mean(x, edge_index))
+        x1_max = F.relu(self.conv1_max(x, edge_index))
+        x1 = torch.cat([x1_mean, x1_max], dim=1)
+
+        x2_mean = F.relu(self.conv2_mean(x1, edge_index))
+        x2_max = F.relu(self.conv2_max(x1, edge_index))
+        x2 = torch.cat([x2_mean, x2_max], dim=1)
+
+        x_multi = torch.cat([x_input, x1, x2], dim=1)
+        x_out = F.relu(self.projection(x_multi))
+
+        return x_out
+
 class GraphSAGEPlusPlusDA(pyg_nn.MessagePassing):
     def __init__(self, in_channels, hidden_channels_list, out_channels, k=None, radius=None):
         super(GraphSAGEPlusPlusDA, self).__init__(aggr='mean')  # or other aggregation if needed

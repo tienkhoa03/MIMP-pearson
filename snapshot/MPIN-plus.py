@@ -15,6 +15,9 @@ from utils.DynamicGNN import (
     DynamicGCN,
     DynamicGAT,
     DynamicGraphSAGE,
+    DynamicGraphSAGEPlusDA,
+    DynamicGraphSAGEPlusDAC,
+    DynamicGraphSAGEPlusDAMC,
     StaticGCN,
     StaticGraphSAGE,
     StaticGAT,
@@ -50,13 +53,20 @@ def build_GNN(in_channels, out_channels, k, base):
         gnn = DynamicGraphSAGE(
             in_channels=in_channels, out_channels=out_channels, k=k
         ).to(device)
-    # experimental with GATv2 and GraphSAGE++
-    # elif base == "GATv2":
-    #     gnn = DynamicGATv2(in_channels=in_channels, out_channels=out_channels, k=k).to(
-    #         device
-    #     )
+    elif base == "SAGE++DA":
+        gnn = DynamicGraphSAGEPlusDA(
+            in_channels=in_channels, out_channels=out_channels, k=k
+        ).to(device)
+    elif base == "SAGE++DAC":
+        gnn = DynamicGraphSAGEPlusDAC(
+            in_channels=in_channels, out_channels=out_channels, k=k
+        ).to(device)
+    elif base == "SAGE++DAMC":
+        gnn = DynamicGraphSAGEPlusDAMC(
+            in_channels=in_channels, out_channels=out_channels, k=k
+        ).to(device)
     elif base == "SAGE++":
-        gnn = DynamicGraphSAGEPlus(
+        gnn = DynamicGraphSAGEPlusDAMC(
             in_channels=in_channels, out_channels=out_channels, k=k
         ).to(device)
 
@@ -85,6 +95,10 @@ def build_GNN_static(in_channels, out_channels, k, base):
             in_channels=in_channels, out_channels=out_channels, k=k
         ).to(device)
     elif base == "SAGE++DAMC":
+        gnn = StaticGraphSAGEPlusDAMC(
+            in_channels=in_channels, out_channels=out_channels, k=k
+        ).to(device)
+    elif base == "SAGE++":
         gnn = StaticGraphSAGEPlusDAMC(
             in_channels=in_channels, out_channels=out_channels, k=k
         ).to(device)
@@ -219,7 +233,7 @@ def window_imputation(
     ori_X_mask = copy.copy(X_mask)
     print("window_X:", ori_X.shape, ori_X_mask.shape)
 
-    if X_last:
+    if X_last is not None:
         X_last = np.array(X_last)
         # eval_X = np.concatenate([X_last, X], axis=0)
         X = np.concatenate([X_last, X], axis=0)
@@ -278,7 +292,7 @@ def window_imputation(
     model_list = [gnn, gnn2]
     regressor = MLPNet(out_channels, in_channels).to(device)
 
-    if initial_state_dict != None:
+    if initial_state_dict is not None:
         gnn.load_state_dict(initial_state_dict["gnn"])
         gnn2.load_state_dict(initial_state_dict["gnn2"])
         if not transfer:
@@ -316,6 +330,20 @@ def window_imputation(
     model_size_list = []
 
     st = datetime.now()
+
+    # Fill missing values with feature means from observed values in current window
+    # Điền các giá trị bị thiếu bằng trung bình của các giá trị cùng chiều quan sát được
+    print("Filling missing values with feature means from observed values...")
+    X_np = X.cpu().numpy()
+    X_mask_np = X_mask.cpu().numpy()
+    for col in range(X_np.shape[1]):
+        observed_mask = X_mask_np[:, col] == 1
+        observed_values = X_np[observed_mask, col]
+        if len(observed_values) > 0:
+            feature_mean = np.mean(observed_values)
+            X_np[~observed_mask, col] = feature_mean
+            print(f"  Feature {col}: filled with mean = {feature_mean:.6f}")
+    X = torch.FloatTensor(X_np).to(device)
 
     # X_knn = X * X_mask
     X_knn = copy.deepcopy(X)

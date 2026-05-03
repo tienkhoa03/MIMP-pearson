@@ -196,7 +196,7 @@ def window_imputation(start, end, sample_ratio, initial_state_dict=None, X_last=
     #     all_mask = copy.copy(X_mask)
     #     all_X = copy.copy(X)
 
-    if X_last:
+    if X_last is not None:
         X_last = np.array(X_last)
         # eval_X = np.concatenate([X_last, X], axis=0)
         all_X = np.concatenate([X_last, X], axis=0)
@@ -261,7 +261,7 @@ def window_imputation(start, end, sample_ratio, initial_state_dict=None, X_last=
 
     X, X_mask, eval_X, eval_mask = data_transform(X, X_mask, eval_ratio=args.eval_ratio)
 
-    if X_last:
+    if X_last is not None:
 
         X_last = np.array(X_last)
         shp_last = X_last.shape
@@ -294,7 +294,7 @@ def window_imputation(start, end, sample_ratio, initial_state_dict=None, X_last=
     model_list = [gnn, gnn2]
     regressor = MLPNet(out_channels, in_channels).to(device)
 
-    if initial_state_dict != None:
+    if initial_state_dict is not None:
         gnn.load_state_dict(initial_state_dict['gnn'])
         gnn2.load_state_dict(initial_state_dict['gnn2'])
         if not transfer:

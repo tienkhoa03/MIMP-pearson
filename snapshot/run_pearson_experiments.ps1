@@ -2,16 +2,20 @@
 # Usage: .\run_pearson_experiments.ps1
 
 Write-Host "Starting Pearson delta experiments..." -ForegroundColor Green
-Write-Host "Dataset: Airquality, k=10, epochs=200, iterations=5" -ForegroundColor Cyan
+Write-Host "Dataset: Wifi, k=10, epochs=200, iterations=5" -ForegroundColor Cyan
 Write-Host ""
 
 # Array of delta values to test
-$deltas = @(0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9)
+$deltas = @(0.4, 0.5)
+$k = @(11, 12, 13, 14, 15)
+$eval_ratios = @(0.1, 0.3, 0.5)
 
 $totalExperiments = $deltas.Count
 $currentExperiment = 0
 
 foreach ($delta in $deltas) {
+    foreach ($k in $k) {
+        foreach ($eval_ratios in $eval_ratios) {
     $currentExperiment++
     Write-Host "========================================" -ForegroundColor Yellow
     Write-Host "Experiment $currentExperiment/$totalExperiments : Delta = $delta" -ForegroundColor Yellow
@@ -21,14 +25,15 @@ foreach ($delta in $deltas) {
     
     # Run the experiment
     python MPIN-plus.py `
-        --dataset KDM `
-        --k 10 `
+        --dataset Airquality `
+        --k $k `
         --epochs 200 `
         --prefix pearson `
         --num_of_iter 5 `
         --base SAGE++DAMC `
         --use_pearson true `
-        --eval_ratio 0.1 `
+        --eval_ratio $eval_ratios `
+        --window 2 `
         --stream 1 `
         --delta $delta
     
@@ -38,6 +43,8 @@ foreach ($delta in $deltas) {
     Write-Host ""
     Write-Host "Completed delta=$delta in $($duration.TotalMinutes.ToString('F2')) minutes" -ForegroundColor Green
     Write-Host ""
+    }
+    }   
 }
 
 Write-Host "========================================" -ForegroundColor Green

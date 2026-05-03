@@ -73,10 +73,11 @@ def load_WiFi_dataset(window=6, dataset_name='KDM', time_step=5, method='saits')
     window_thre = start_time + float(window)*60
     ori_floor_df = ori_floor_df.loc[ori_floor_df['ts'] <= window_thre, :]
     print('window data len:', ori_floor_df.shape[0])
-    Feature_len = ori_floor_df.shape[1] - 4
-    print('feature length:', Feature_len)
-    Feature_df = ori_floor_df.iloc[:, :Feature_len]
-    # normalize all samples:
+    metadata_cols = ['floor', 'x', 'y', 'wp_ts', 'ts', 'path']
+    Feature_df = ori_floor_df.drop(columns=metadata_cols, errors='ignore')
+    # Ensure features are numeric so downstream np.isnan works safely.
+    Feature_df = Feature_df.apply(pd.to_numeric, errors='coerce')
+    print('feature length:', Feature_df.shape[1])
 
     X = Feature_df.values
     if method == 'saits':
@@ -209,9 +210,11 @@ def load_WiFi_dataset_all(dataset_name='KDM', time_step=5, method='saits'):
     ori_floor_df.ts = ori_floor_df.ts.astype(float)/1000
     start_time = ori_floor_df.loc[0, ['ts']].values[0]
     print('start time:', start_time, type(start_time))
-    Feature_len = ori_floor_df.shape[1] - 4
-    print('feature length:', Feature_len)
-    Feature_df = ori_floor_df.iloc[:, :Feature_len]
+    metadata_cols = ['floor', 'x', 'y', 'wp_ts', 'ts', 'path']
+    Feature_df = ori_floor_df.drop(columns=metadata_cols, errors='ignore')
+    # Ensure all feature columns are numeric so downstream np.isnan works safely.
+    Feature_df = Feature_df.apply(pd.to_numeric, errors='coerce')
+    print('feature length:', Feature_df.shape[1])
     # normalize all samples:
     X = Feature_df.values
     if method == 'saits':
