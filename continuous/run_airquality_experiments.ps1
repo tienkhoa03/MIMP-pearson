@@ -36,29 +36,6 @@ try {
     $current = 0
     $globalStart = Get-Date
 
-    foreach ($base in $bases) {
-        foreach ($eval in $evalRatios) {
-            foreach ($stream in $streamRatios) {
-                foreach ($increMode in $increModes) {
-                    $current++
-                    Write-Host "[$current/$totalExperiments] dataset=$dataset base=$base eval=$eval pearson=false stream=$stream incre_mode=$increMode"
-
-                    python continuous.py `
-                        --dataset $dataset `
-                        --window $window `
-                        --k $k `
-                        --epochs $epochs `
-                        --prefix $prefixNoPearson `
-                        --num_of_iter $numIter `
-                        --base $base `
-                        --eval_ratio $eval `
-                        --stream $stream `
-                        --incre_mode $increMode `
-                        --use_pearson false
-                }
-            }
-        }
-    }
 
     foreach ($base in $bases) {
         foreach ($eval in $evalRatios) {

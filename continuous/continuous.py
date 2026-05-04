@@ -624,7 +624,7 @@ avg_df = sum(iter_results_list)/num_of_iteration
 # avg_df = pd.DataFrame(avg_df.mean()).T
 avg_df = avg_df.round(4)
 avg_df.to_csv(f'./iif_exp/{args.prefix}_{args.dataset}_{args.method}_{args.incre_mode}_{args.k}_{args.base}_window_{args.window}_epoch_{args.epochs}_eval_{args.eval_ratio}_stream_{args.stream}'
-              f'_state_{args.state}_thre_{args.thre}.csv', header=True, index=True)
+              f'_state_{args.state}_thre_{args.thre}_delta_{args.delta}.csv', header=True, index=True)
 
 
 # if args.prefix == 'testNumStream':

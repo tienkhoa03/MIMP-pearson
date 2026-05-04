@@ -63,58 +63,37 @@ def build_similarity_graph(
         raise ValueError("pearson_matrix size does not match stream count")
 
     pearson_mask = pearson_matrix.abs() >= delta
-    edge_src = []
-    edge_dst = []
+    pearson_mask.fill_diagonal_(False)
 
-    for stream_idx in range(num_streams):
-        source_nodes = _get_stream_nodes(
-            stream_idx, num_nodes, window_length, layout, num_streams, device
-        )
-
-        allowed_streams = torch.nonzero(pearson_mask[stream_idx], as_tuple=False).flatten()
-        if allowed_streams.numel() == 0:
-            continue
-
-        candidate_nodes = []
-        for candidate_stream in allowed_streams.tolist():
-            if candidate_stream == stream_idx:
-                continue
-            candidate_nodes.append(
-                _get_stream_nodes(
-                    candidate_stream,
-                    num_nodes,
-                    window_length,
-                    layout,
-                    num_streams,
-                    device,
-                )
-            )
-
-        if not candidate_nodes:
-            continue
-
-        candidate_nodes = torch.cat(candidate_nodes, dim=0)
-        if candidate_nodes.numel() == 0:
-            continue
-
-        distances = torch.cdist(X[source_nodes], X[candidate_nodes], p=2)
-        k_eff = min(k, candidate_nodes.numel())
-        topk_vals, topk_idx = torch.topk(distances, k_eff, dim=1, largest=False)
-        valid = torch.isfinite(topk_vals)
-        if not valid.any():
-            continue
-
-        src = source_nodes.unsqueeze(1).expand(-1, k_eff).reshape(-1)
-        dst = candidate_nodes[topk_idx.reshape(-1)]
-        valid_flat = valid.reshape(-1)
-
-        edge_src.append(src[valid_flat])
-        edge_dst.append(dst[valid_flat])
-
-    if not edge_src:
+    if not pearson_mask.any():
         return torch.empty((2, 0), dtype=torch.long, device=device)
 
-    return torch.stack([torch.cat(edge_src), torch.cat(edge_dst)], dim=0)
+    if layout == "stream_major":
+        node_stream_ids = torch.arange(num_streams, device=device).repeat_interleave(
+            window_length
+        )
+    elif layout == "time_major":
+        node_stream_ids = torch.arange(num_streams, device=device).repeat(window_length)
+    else:
+        raise ValueError("layout must be 'stream_major' or 'time_major'")
+
+    candidate_mask = pearson_mask[node_stream_ids][:, node_stream_ids]
+    candidate_mask.fill_diagonal_(False)
+
+    distances = torch.cdist(X, X, p=2)
+    distances = distances.masked_fill(~candidate_mask, float("inf"))
+
+    k_eff = min(k, max(num_nodes - 1, 1))
+    topk_vals, topk_idx = torch.topk(distances, k_eff, dim=1, largest=False)
+    valid = torch.isfinite(topk_vals)
+    if not valid.any():
+        return torch.empty((2, 0), dtype=torch.long, device=device)
+
+    src = torch.arange(num_nodes, device=device).unsqueeze(1).expand(-1, k_eff).reshape(-1)
+    dst = topk_idx.reshape(-1)
+    valid_flat = valid.reshape(-1)
+
+    return torch.stack([src[valid_flat], dst[valid_flat]], dim=0)
 
 
 def get_similarity_graph(

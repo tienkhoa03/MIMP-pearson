@@ -254,10 +254,11 @@ def window_imputation(
             feature_mean = np.mean(observed_values)
             X_np[~observed_mask, col] = feature_mean
             print(f"  Feature {col}: filled with mean = {feature_mean:.6f}")
-    X = torch.FloatTensor(X_np).to(device)
+    X_cpu = torch.FloatTensor(X_np)
+    X = X_cpu.to(device)
 
     # X_knn = X * X_mask
-    X_knn = copy.deepcopy(X)
+    X_knn = copy.deepcopy(X_cpu)
 
     # Build graph with Pearson filtering if enabled
     if args.use_pearson == "true":

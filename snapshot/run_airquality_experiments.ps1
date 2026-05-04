@@ -34,24 +34,6 @@ try {
     $current = 0
     $globalStart = Get-Date
 
-    foreach ($base in $bases) {
-        foreach ($eval in $evalRatios) {
-            $current++
-            Write-Host "[$current/$totalExperiments] dataset=$dataset base=$base eval=$eval pearson=false"
-
-            python MPIN-plus.py `
-                --dataset $dataset `
-                --window $window `
-                --k $k `
-                --epochs $epochs `
-                --prefix $prefixNoPearson `
-                --num_of_iter $numIter `
-                --base $base `
-                --eval_ratio $eval `
-                --stream $stream `
-                --use_pearson false
-        }
-    }
 
     foreach ($base in $bases) {
         foreach ($eval in $evalRatios) {
