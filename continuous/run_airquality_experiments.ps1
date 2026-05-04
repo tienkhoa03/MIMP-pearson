@@ -1,7 +1,8 @@
 # Continuous batch experiments for Airquality
 # Cases:
-# - base: SAGE++DAC, SAGE++DAMC
+# - base: SAGE++DAMC only
 # - eval_ratio: 0.1, 0.3, 0.5
+# - stream ratio: 0.1%, 1%, 10%, 100%
 # - no Pearson
 # - Pearson delta: 0.1..0.9
 # Fixed window length: 2 (hours)
@@ -18,59 +19,62 @@ try {
 
     $dataset = "Airquality"
     $window = 2
-    $bases = @("SAGE++DAC", "SAGE++DAMC")
+    $bases = @("SAGE++DAMC")
     $evalRatios = @(0.1, 0.3, 0.5)
     $deltas = @(0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9)
+    $streamRatios = @(0.001, 0.01, 0.1, 1.0)
 
     $epochs = 200
     $numIter = 5
     $k = 10
-    $stream = 1
-
     $prefixNoPearson = "no_pearson"
     $prefixPearson = "pearson"
 
-    $totalExperiments = ($bases.Count * $evalRatios.Count) + ($bases.Count * $evalRatios.Count * $deltas.Count)
+    $totalExperiments = ($bases.Count * $evalRatios.Count * $streamRatios.Count) + ($bases.Count * $evalRatios.Count * $deltas.Count * $streamRatios.Count)
     $current = 0
     $globalStart = Get-Date
 
     foreach ($base in $bases) {
         foreach ($eval in $evalRatios) {
-            $current++
-            Write-Host "[$current/$totalExperiments] dataset=$dataset base=$base eval=$eval pearson=false"
-
-            python continuous.py `
-                --dataset $dataset `
-                --window $window `
-                --k $k `
-                --epochs $epochs `
-                --prefix $prefixNoPearson `
-                --num_of_iter $numIter `
-                --base $base `
-                --eval_ratio $eval `
-                --stream $stream `
-                --use_pearson false
-        }
-    }
-
-    foreach ($base in $bases) {
-        foreach ($eval in $evalRatios) {
-            foreach ($delta in $deltas) {
+            foreach ($stream in $streamRatios) {
                 $current++
-                Write-Host "[$current/$totalExperiments] dataset=$dataset base=$base eval=$eval pearson=true delta=$delta"
+                Write-Host "[$current/$totalExperiments] dataset=$dataset base=$base eval=$eval pearson=false stream=$stream"
 
                 python continuous.py `
                     --dataset $dataset `
                     --window $window `
                     --k $k `
                     --epochs $epochs `
-                    --prefix $prefixPearson `
+                    --prefix $prefixNoPearson `
                     --num_of_iter $numIter `
                     --base $base `
                     --eval_ratio $eval `
                     --stream $stream `
-                    --use_pearson true `
-                    --delta $delta
+                    --use_pearson false
+            }
+        }
+    }
+
+    foreach ($base in $bases) {
+        foreach ($eval in $evalRatios) {
+            foreach ($delta in $deltas) {
+                foreach ($stream in $streamRatios) {
+                    $current++
+                    Write-Host "[$current/$totalExperiments] dataset=$dataset base=$base eval=$eval pearson=true delta=$delta stream=$stream"
+
+                    python continuous.py `
+                        --dataset $dataset `
+                        --window $window `
+                        --k $k `
+                        --epochs $epochs `
+                        --prefix $prefixPearson `
+                        --num_of_iter $numIter `
+                        --base $base `
+                        --eval_ratio $eval `
+                        --stream $stream `
+                        --use_pearson true `
+                        --delta $delta
+                }
             }
         }
     }

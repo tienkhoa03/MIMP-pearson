@@ -222,7 +222,7 @@ def window_imputation(
 
     num_of_params = sum(p.numel() for p in filter_fn)
 
-    # print("number of trainable parameters:", num_of_params)
+    print("number of trainable parameters:", num_of_params)
 
     num_of_params = num_of_params / 1e6
 
@@ -244,7 +244,7 @@ def window_imputation(
 
     # Fill missing values with feature means from observed values in current window
     # Điền các giá trị bị thiếu bằng trung bình của các giá trị cùng chiều quan sát được
-    # print("Filling missing values with feature means from observed values...")
+    print("Filling missing values with feature means from observed values...")
     X_np = X.cpu().numpy()
     X_mask_np = X_mask.cpu().numpy()
     for col in range(X_np.shape[1]):
@@ -253,7 +253,7 @@ def window_imputation(
         if len(observed_values) > 0:
             feature_mean = np.mean(observed_values)
             X_np[~observed_mask, col] = feature_mean
-            # print(f"  Feature {col}: filled with mean = {feature_mean:.6f}")
+            print(f"  Feature {col}: filled with mean = {feature_mean:.6f}")
     X = torch.FloatTensor(X_np).to(device)
 
     # X_knn = X * X_mask
@@ -261,19 +261,19 @@ def window_imputation(
 
     # Build graph with Pearson filtering if enabled
     if args.use_pearson == "true":
-        # print("Using Pearson-filtered graph construction...")
+        print("Using Pearson-filtered graph construction...")
         try:
             edge_index = get_similarity_graph_snapshot(
                 X_knn, k=args.k, delta=args.delta, window_length=args.window
             )
             if edge_index.numel() == 0:
-                # print("Warning: No edges after Pearson filter; using standard KNN.")
+                print("Warning: No edges after Pearson filter; using standard KNN.")
                 edge_index = knn_graph(X_knn, args.k, batch=None, loop=False, cosine=False)
         except ValueError as exc:
-            # print(f"Pearson graph fallback to KNN: {exc}")
+            print(f"Pearson graph fallback to KNN: {exc}")
             edge_index = knn_graph(X_knn, args.k, batch=None, loop=False, cosine=False)
     else:
-        # print("Using standard KNN graph construction...")
+        print("Using standard KNN graph construction...")
         edge_index = knn_graph(X_knn, args.k, batch=None, loop=False, cosine=False)
 
     for pre_epoch in range(epochs):
@@ -291,8 +291,8 @@ def window_imputation(
                 X_emb = model_list[i](X_imputed)
             else:
                 X_emb, edge_index = model_list[i](X_imputed, edge_index)
-            # print(i, "X_emb shape:", X_emb.shape)
-            # print(i, "X_emd:", X_emb)
+            print(i, "X_emb shape:", X_emb.shape)
+            print(i, "X_emd:", X_emb)
 
             # X_emb = F.relu(X_emb)
 
@@ -307,7 +307,7 @@ def window_imputation(
         loss.backward()
         opt.step()
         train_loss = loss.item()
-        # print("{n} epoch loss:".format(n=pre_epoch), train_loss)
+        print("{n} epoch loss:".format(n=pre_epoch), train_loss)
 
         # trans_X = X_imputed * std_f + mean_f
         trans_X = copy.copy(X_imputed)
@@ -318,8 +318,8 @@ def window_imputation(
 
         trans_eval_X = copy.copy(eval_X)
 
-        # print("trans_X shape", trans_X.shape)
-        # print("trans_eval_X shape", trans_eval_X.shape)
+        print("trans_X shape", trans_X.shape)
+        print("trans_eval_X shape", trans_eval_X.shape)
 
         # epoch_state_dict = {'gnn': gnn.state_dict(), 'gnn2': gnn2.state_dict(),  'regressor': regressor.state_dict()}
         # state_dict_list.append(epoch_state_dict)
@@ -348,36 +348,36 @@ def window_imputation(
 
             eval_impute_mape_error_list.append(round(eval_impute_error_mape.item(), 6))
 
-            # print(
-            #     "{epcoh}:valid impute value samples:".format(epcoh=pre_epoch),
-            #     (trans_X[torch.where(eval_mask == 1)]),
-            # )
-            # print(
-            #     "valid true value samples:", (trans_eval_X[torch.where(eval_mask == 1)])
-            # )
+            print(
+                "{epcoh}:valid impute value samples:".format(epcoh=pre_epoch),
+                (trans_X[torch.where(eval_mask == 1)]),
+            )
+            print(
+                "valid true value samples:", (trans_eval_X[torch.where(eval_mask == 1)])
+            )
 
-            # print("valid impute error MAE:", eval_impute_error.item())
-            # print("valid impute error MSE:", eval_impute_error_mse.item())
+            print("valid impute error MAE:", eval_impute_error.item())
+            print("valid impute error MSE:", eval_impute_error_mse.item())
 
-            # print("valid impute error MRE:", eval_impute_error_mape.item())
+            print("valid impute error MRE:", eval_impute_error_mape.item())
 
             eval_impute_error_list.append(round(eval_impute_error.item(), 6))
-            # print("valid min impute error MAE:", min(eval_impute_error_list))
+            print("valid min impute error MAE:", min(eval_impute_error_list))
 
             eval_impute_mse_error_list.append(round(eval_impute_error_mse.item(), 6))
-            # print("valid min impute error MSE:", min(eval_impute_mse_error_list))
+            print("valid min impute error MSE:", min(eval_impute_mse_error_list))
 
-            # print("valid min impute error MRE:", min(eval_impute_mape_error_list))
+            print("valid min impute error MRE:", min(eval_impute_mape_error_list))
 
             current_time = datetime.now()
             elapsed_time = (current_time - st).total_seconds() / 60
-            # print("{epoch}_elapsed time:".format(epoch=pre_epoch), elapsed_time)
+            print("{epoch}_elapsed time:".format(epoch=pre_epoch), elapsed_time)
             elapsed_time_list.append(round(elapsed_time, 6))
 
             model_size = (
                 get_model_size(gnn) + get_model_size(gnn2) + get_model_size(regressor)
             )
-            # print("{epoch}_model size:".format(epoch=pre_epoch), model_size)
+            print("{epoch}_model size:".format(epoch=pre_epoch), model_size)
 
             model_size_list.append(round(model_size, 6))
 
@@ -385,29 +385,29 @@ def window_imputation(
                 list(enumerate(eval_impute_error_list)), key=lambda x: x[1]
             )
 
-            # print(
-            #     "{epoch}:min MAE error: epoch, MAE, MRE, time, memory".format(
-            #         epoch=pre_epoch
-            #     ),
-            #     arg_min_mae_error,
-            #     min_mae_error,
-            #     eval_impute_mape_error_list[arg_min_mae_error],
-            #     elapsed_time_list[arg_min_mae_error],
-            #     model_size_list[arg_min_mae_error],
-            # )
+            print(
+                "{epoch}:min MAE error: epoch, MAE, MRE, time, memory".format(
+                    epoch=pre_epoch
+                ),
+                arg_min_mae_error,
+                min_mae_error,
+                eval_impute_mape_error_list[arg_min_mae_error],
+                elapsed_time_list[arg_min_mae_error],
+                model_size_list[arg_min_mae_error],
+            )
 
             arg_min_mape_error, min_mape_error = min(
                 list(enumerate(eval_impute_mape_error_list)), key=lambda x: x[1]
             )
 
-            # print(
-            #     "min MRE error: epoch, MRE, MAE, time, Memory",
-            #     arg_min_mape_error,
-            #     min_mape_error,
-            #     eval_impute_error_list[arg_min_mape_error],
-            #     elapsed_time_list[arg_min_mape_error],
-            #     model_size_list[arg_min_mape_error],
-            # )
+            print(
+                "min MRE error: epoch, MRE, MAE, time, Memory",
+                arg_min_mape_error,
+                min_mape_error,
+                eval_impute_error_list[arg_min_mape_error],
+                elapsed_time_list[arg_min_mape_error],
+                model_size_list[arg_min_mape_error],
+            )
 
     et = datetime.now()
     total_elapsed_time = round((et - st).total_seconds() / 60, 6)
