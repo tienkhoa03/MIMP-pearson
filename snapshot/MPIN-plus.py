@@ -115,7 +115,7 @@ def get_similarity_graph_snapshot(X, k=10, delta=0.3, window_length=2):
         delta=delta,
         layout="stream_major",
     )
-    return edge_index.to(X.device)
+    return edge_index.to(device)
 
 
 def get_window_data(start, end, ratio):
