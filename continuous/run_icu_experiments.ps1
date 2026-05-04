@@ -27,7 +27,7 @@ try {
     $increModes = @("alone", "data", "transfer", "data+state+transfer")
 
     $epochs = 200
-    $numIter = 5
+    $numIter = 1
     $k = 10
     $prefixNoPearson = "no_pearson"
     $prefixPearson = "pearson"
