@@ -24,7 +24,7 @@ try {
     $deltas = @(0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9)
 
     $epochs = 200
-    $numIter = 1
+    $numIter = 5
     $k = 10
     $stream = 1
 
