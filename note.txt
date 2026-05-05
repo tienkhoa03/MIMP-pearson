@@ -1,8 +1,11 @@
 pip install torch-scatter torch-sparse torch-cluster torch-spline-conv -f https://data.pyg.org/whl/torch-2.4.1+cu121.html
 pip install torch-geometric
 
-python MPIN-plus.py --dataset Airquality --k 10 --epochs 200 --prefix pearson --num_of_iter 1 --base SAGE++DAMC --use_pearson true --eval_ratio 0.1 --stream 1 --delta 0.4 --window 2
+venv311/Scripts/activate
 
+python MPIN-plus.py --dataset ICU --k 10 --epochs 200 --prefix pearson --num_of_iter 1 --base SAGE++DAMC --use_pearson true --eval_ratio 0.1 --stream 1 --delta 0.1 --window 4
+
+python MPIN-plus.py --dataset KDM --k 10 --epochs 200 --prefix pearson --num_of_iter 1 --base SAGE++DAMC --eval_ratio 0.1 --stream 1 --window 6
 
 python -m pip install --upgrade pip setuptools wheel
 pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu128
