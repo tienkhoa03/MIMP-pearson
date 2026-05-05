@@ -1,5 +1,6 @@
 import copy
 import numpy as np
+import os
 from sklearn.preprocessing import StandardScaler
 from pypots.data import load_specific_dataset, mcar, masked_fill
 from pypots.imputation import SAITS
@@ -422,6 +423,56 @@ def load_airquality_dataset_all(method='saits', stream=1):
         X = X[:int(num_samples*stream),:, :]
         # X = np.transpose(X, (1,0,2))
         return X.reshape(-1, num_of_channels)
+
+
+def load_IBRL_dataset(method='saits'):
+    filename = 'intel_berkeley_research_lab_sensor_data.txt'
+    columns = ['date', 'time', 'epoch', 'moteid', 'temperature', 'humidity', 'light', 'voltage']
+
+    candidates = [
+        os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'data', filename)),
+        os.path.abspath(os.path.join(os.getcwd(), '..', 'data', filename)),
+        os.path.abspath(os.path.join(os.getcwd(), 'data', filename)),
+    ]
+
+    file_path = None
+    for p in candidates:
+        if os.path.exists(p):
+            file_path = p
+            break
+
+    if file_path is None:
+        raise FileNotFoundError(
+            f"IBRL data file not found. Tried: {candidates} (cwd={os.getcwd()})"
+        )
+
+    try:
+        df = pd.read_csv(file_path, sep=r'\s+', header=None, names=columns, on_bad_lines='skip', engine='python')
+    except TypeError:
+        df = pd.read_csv(file_path, sep=r'\s+', header=None, names=columns, error_bad_lines=False, warn_bad_lines=False, engine='python')
+
+    for col in ['epoch', 'moteid', 'temperature', 'humidity', 'light', 'voltage']:
+        df[col] = pd.to_numeric(df[col], errors='coerce')
+
+    df = df.dropna(subset=['epoch', 'moteid', 'temperature', 'humidity', 'light', 'voltage'])
+    df = df[(df['temperature'] > 0) & (df['temperature'] < 50)]
+    df = df[(df['humidity'] > 0) & (df['humidity'] < 100)]
+    df = df[(df['voltage'] > 2.0) & (df['voltage'] < 3.0)]
+    df = df.sort_values(['epoch', 'moteid']).reset_index(drop=True)
+
+    features = ['temperature', 'humidity', 'light']
+    epochs = np.sort(df['epoch'].unique())
+    moteids = np.sort(df['moteid'].unique())
+    X = np.full((len(epochs), len(moteids), len(features)), np.nan, dtype=float)
+
+    for idx, feat in enumerate(features):
+        X[:, :, idx] = df.pivot_table(index='epoch', columns='moteid', values=feat, aggfunc='mean').reindex(index=epochs, columns=moteids).to_numpy()
+
+    if method == 'saits':
+        X = StandardScaler().fit_transform(X.reshape(-1, len(features))).reshape(len(epochs), len(moteids), len(features))
+        return X
+    else:
+        return X.reshape(-1, len(features))
 
 
 # a = load_airquality_dataset()

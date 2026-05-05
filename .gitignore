@@ -11,3 +11,5 @@ exp_results/*
 venv/*
 
 venv311/*
+
+data/intel_berkeley_research_lab_sensor_data.txt

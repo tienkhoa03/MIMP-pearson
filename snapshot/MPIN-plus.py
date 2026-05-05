@@ -31,6 +31,7 @@ from utils.load_dataset import (
     load_ICU_dataset,
     load_airquality_dataset,
     load_WiFi_dataset,
+    load_IBRL_dataset,
     load_weather_dataset,
     get_model_size,
 )
@@ -573,6 +574,22 @@ elif args.dataset in ["Weather", "weather"]:
     print("std_X", std_X)
     base_X = (base_X - mean_X) / std_X
     print("base Weather data shape:", base_X.shape, base_X_mask.shape)
+
+elif args.dataset == "Labsensor":
+    print("dataset:Labsensor")
+    base_X = load_IBRL_dataset(method="mpin")
+    base_X_mask = (~np.isnan(base_X)).astype(int)
+    base_X = base_X.copy()
+    # Fill missing values with mean per feature
+    feature_means = np.nanmean(base_X, axis=0)
+    for col in range(base_X.shape[1]):
+        base_X[np.isnan(base_X[:, col]), col] = feature_means[col]
+    mean_X = np.mean(base_X)
+    print("mean_X", mean_X)
+    std_X = np.std(base_X)
+    print("std_X", std_X)
+    base_X = (base_X - mean_X) / std_X
+    print("base Labsensor data shape:", base_X.shape, base_X_mask.shape)
 
 # elif args.dataset == 'ICU':
 #     print('dataset:physionet')
