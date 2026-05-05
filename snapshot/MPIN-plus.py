@@ -269,13 +269,13 @@ def window_imputation(
             )
             if edge_index.numel() == 0:
                 print("Warning: No edges after Pearson filter; using standard KNN.")
-                edge_index = knn_graph(X_knn, args.k, batch=None, loop=False, cosine=False)
+                    edge_index = knn_graph(X_knn, args.k, batch=None, loop=False, cosine=False).to(device)
         except ValueError as exc:
             print(f"Pearson graph fallback to KNN: {exc}")
-            edge_index = knn_graph(X_knn, args.k, batch=None, loop=False, cosine=False)
+                edge_index = knn_graph(X_knn, args.k, batch=None, loop=False, cosine=False).to(device)
     else:
         print("Using standard KNN graph construction...")
-        edge_index = knn_graph(X_knn, args.k, batch=None, loop=False, cosine=False)
+        edge_index = knn_graph(X_knn, args.k, batch=None, loop=False, cosine=False).to(device)
 
     for pre_epoch in range(epochs):
 
