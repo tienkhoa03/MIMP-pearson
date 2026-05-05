@@ -276,7 +276,31 @@ def window_imputation(
             edge_index = knn_graph(X_knn, args.k, batch=None, loop=False, cosine=False).to(device)
     else:
         print("Using standard KNN graph construction...")
-        edge_index = knn_graph(X_knn, args.k, batch=None, loop=False, cosine=False).to(device)
+        print("  X_knn shape:", X_knn.shape, "k:", args.k)
+        try:
+            edge_index = knn_graph(X_knn, args.k, batch=None, loop=False, cosine=False).to(device)
+        except Exception as exc:
+            print("knn_graph raised an exception or blocked:", exc)
+            try:
+                from sklearn.neighbors import NearestNeighbors
+            except Exception as e:
+                print("sklearn not available for fallback KNN:", e)
+                raise
+
+            print("Falling back to sklearn NearestNeighbors (may be faster/more interruptible)...")
+            X_np = X_knn.cpu().numpy()
+            n_neighbors = min(args.k, max(1, X_np.shape[0] - 1))
+            nbrs = NearestNeighbors(n_neighbors=n_neighbors, algorithm="auto", n_jobs=1).fit(X_np)
+            distances, indices = nbrs.kneighbors(X_np)
+
+            import numpy as _np
+            src = _np.repeat(_np.arange(X_np.shape[0]), indices.shape[1])
+            dst = indices.reshape(-1)
+            mask = src != dst
+            src = src[mask]
+            dst = dst[mask]
+            import torch as _torch
+            edge_index = _torch.LongTensor(_np.vstack([src, dst])).to(device)
 
     for pre_epoch in range(epochs):
 
@@ -447,6 +471,7 @@ parser.add_argument("--prefix", type=str, default="testKnnK")
 parser.add_argument("--num_of_iter", type=int, default=5)
 parser.add_argument("--out_channels", type=int, default=256)
 parser.add_argument("--k", type=int, default=10)
+parser.add_argument("--max_nodes_for_knn", type=int, default=200000, help="Abort full KNN if node count exceeds this (use pearson or reduce data)")
 
 parser.add_argument("--lr", type=float, default=0.01)
 parser.add_argument("--weight_decay", type=float, default=0.1)
@@ -580,6 +605,16 @@ elif args.dataset == "Labsensor":
     base_X = load_IBRL_dataset(method="mpin")
     base_X_mask = (~np.isnan(base_X)).astype(int)
     base_X = base_X.copy()
+    # Apply stream subsampling if requested (Labsensor loader doesn't accept stream)
+    if args.stream is not None and args.stream < 1.0:
+        try:
+            num_rows = int(base_X.shape[0] * float(args.stream))
+            num_rows = max(1, num_rows)
+            print(f"Applying stream subsample: keeping {num_rows} / {base_X.shape[0]} rows (stream={args.stream})")
+            base_X = base_X[:num_rows]
+            base_X_mask = base_X_mask[:num_rows]
+        except Exception as _:
+            print("Warning: failed to apply stream subsampling for Labsensor; skipping subsample")
     # Fill missing values with mean per feature
     feature_means = np.nanmean(base_X, axis=0)
     for col in range(base_X.shape[1]):
