@@ -19,7 +19,7 @@ try {
     $dataset = "Airquality"
     $window = 2
     $bases = @("SAGE++DAC", "SAGE++DAMC")
-    $evalRatios = @(0.1, 0.3, 0.5)
+    $evalRatios = @(0.4, 0.6, 0.8)
     $deltas = @(0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9)
 
     $epochs = 200

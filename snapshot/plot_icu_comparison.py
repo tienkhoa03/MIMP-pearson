@@ -133,7 +133,7 @@ def plot_results(results, out_path=None):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--dir', default='exp_results/ICU', help='Directory with ICU CSV results')
+    parser.add_argument('--dir', default='exp_results/ICU2', help='Directory with ICU CSV results')
     parser.add_argument('--out', default='plots/icu_comparison.png', help='Output path for combined figure')
     parser.add_argument('--aggregate', default='plots/icu_aggregated.csv', help='Path to save aggregated CSV of results')
     args = parser.parse_args()

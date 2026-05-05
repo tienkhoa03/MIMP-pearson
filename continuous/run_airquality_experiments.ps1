@@ -21,8 +21,8 @@ try {
     $dataset = "Airquality"
     $window = 2
     $bases = @("SAGE++DAMC")
-    $evalRatios = @(0.1, 0.3, 0.5)
-    $deltas = @(0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9)
+    $evalRatios = @(0.8)
+    $deltas = @(0.3, 0.4, 0.5)
     $streamRatios = @(0.001, 0.01, 0.1, 1.0)
     $increModes = @("alone", "data", "transfer", "data+state+transfer")
 
