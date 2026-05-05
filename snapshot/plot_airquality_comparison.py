@@ -68,21 +68,37 @@ def read_mae_from_csv(path):
 def gather_results(directory):
     files = [os.path.join(directory, f) for f in os.listdir(directory) if f.lower().endswith('.csv')]
     results = defaultdict(list)  # key: (method, eval) -> list of (pearson, mae)
+    records = []
     for f in files:
         method, eval_v, pearson = extract_info_from_filename(f)
         if method not in ('DAC', 'DAMC'):
             continue
         if eval_v is None:
             continue
-        # some files may omit pearson in name; skip if unknown
         if pearson is None:
             continue
-        mae = read_mae_from_csv(f)
-        if mae is None:
+        try:
+            df = pd.read_csv(f)
+        except Exception:
             continue
-        key = (method, eval_v)
-        results[key].append((pearson, mae))
-    return results
+        if df.shape[0] == 0:
+            continue
+        rec = df.iloc[0].to_dict()
+        rec.update({'__filename': os.path.basename(f), 'method': method, 'eval': eval_v, 'pearson': pearson})
+        records.append(rec)
+        mae = None
+        for col in ("opt_mae", "mae", "opt_MAE", "MAE"):
+            if col in rec:
+                try:
+                    mae = float(rec[col])
+                except Exception:
+                    mae = None
+                break
+        if mae is not None:
+            key = (method, eval_v)
+            results[key].append((pearson, mae))
+
+    return results, pd.DataFrame(records) if records else pd.DataFrame()
 
 
 def plot_results(results, out_path=None):
@@ -122,16 +138,22 @@ def plot_results(results, out_path=None):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--dir', default='exp_results/Airquality', help='Directory with Airquality CSV results')
+    parser.add_argument('--dir', default='exp_results/Airquality2', help='Directory with Airquality CSV results')
     parser.add_argument('--out', default='plots/airquality_comparison.png', help='Output path for combined figure')
+    parser.add_argument('--aggregate', default='plots/airquality_aggregated.csv', help='Path to save aggregated CSV of results')
     args = parser.parse_args()
-
     if not os.path.isdir(args.dir):
         raise SystemExit(f"Directory not found: {args.dir}")
 
-    results = gather_results(args.dir)
-    if not results:
+    results, agg_df = gather_results(args.dir)
+    if agg_df is None or agg_df.empty:
         raise SystemExit("No matching results found in directory. Check filenames and location.")
+
+    # save aggregated CSV
+    os.makedirs(os.path.dirname(args.aggregate), exist_ok=True)
+    agg_df.to_csv(args.aggregate, index=False)
+    print(f"Saved aggregated CSV to {args.aggregate} ({len(agg_df)} rows)")
+
     plot_results(results, args.out)
 
 

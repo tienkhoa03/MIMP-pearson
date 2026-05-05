@@ -60,22 +60,47 @@ def read_mae_from_csv(path):
     return None
 
 
-def gather_results(directory):
+def gather_results(directory, aggregate_out=None):
     if not os.path.isdir(directory):
         raise FileNotFoundError(directory)
     files = [os.path.join(directory, f) for f in os.listdir(directory) if f.lower().endswith('.csv')]
     results = defaultdict(list)
+    records = []
     for f in files:
         method, eval_v, pearson = extract_info_from_filename(f)
         if method not in ('DAC', 'DAMC'):
             continue
         if eval_v is None or pearson is None:
             continue
-        mae = read_mae_from_csv(f)
-        if mae is None:
+        try:
+            df = pd.read_csv(f)
+        except Exception:
             continue
-        results[(method, eval_v)].append((pearson, mae))
-    return results
+        if df.shape[0] == 0:
+            continue
+        rec = df.iloc[0].to_dict()
+        rec.update({'__filename': os.path.basename(f), 'method': method, 'eval': eval_v, 'pearson': pearson})
+        records.append(rec)
+        mae = None
+        for col in ("opt_mae", "mae", "opt_MAE", "MAE"):
+            if col in rec:
+                try:
+                    mae = float(rec[col])
+                except Exception:
+                    mae = None
+                break
+        if mae is not None:
+            results[(method, eval_v)].append((pearson, mae))
+
+    if aggregate_out and records:
+        agg_df = pd.DataFrame(records)
+        os.makedirs(os.path.dirname(aggregate_out), exist_ok=True)
+        agg_df.to_csv(aggregate_out, index=False)
+        print(f"Saved aggregated CSV to {aggregate_out}")
+    else:
+        agg_df = pd.DataFrame(records) if records else pd.DataFrame()
+
+    return results, agg_df
 
 
 def plot_results(results, out_path=None):
@@ -110,12 +135,14 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--dir', default='exp_results/ICU', help='Directory with ICU CSV results')
     parser.add_argument('--out', default='plots/icu_comparison.png', help='Output path for combined figure')
+    parser.add_argument('--aggregate', default='plots/icu_aggregated.csv', help='Path to save aggregated CSV of results')
     args = parser.parse_args()
-
-    results = gather_results(args.dir)
+    results, agg_df = gather_results(args.dir, aggregate_out=args.aggregate)
     if not results:
         raise SystemExit('No matching results found in directory. Check filenames and location.')
     plot_results(results, args.out)
+    if not agg_df.empty:
+        print(f"Aggregated {len(agg_df)} result rows into {args.aggregate}")
 
 
 if __name__ == '__main__':
