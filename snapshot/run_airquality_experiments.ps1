@@ -34,28 +34,47 @@ try {
     $current = 0
     $globalStart = Get-Date
 
-
     foreach ($base in $bases) {
         foreach ($eval in $evalRatios) {
-            foreach ($delta in $deltas) {
-                $current++
-                Write-Host "[$current/$totalExperiments] dataset=$dataset base=$base eval=$eval pearson=true delta=$delta"
+            $current++
+            Write-Host "[$current/$totalExperiments] dataset=$dataset base=$base eval=$eval pearson=false"
 
-                python MPIN-plus.py `
-                    --dataset $dataset `
-                    --window $window `
-                    --k $k `
-                    --epochs $epochs `
-                    --prefix $prefixPearson `
-                    --num_of_iter $numIter `
-                    --base $base `
-                    --eval_ratio $eval `
-                    --stream $stream `
-                    --use_pearson true `
-                    --delta $delta
-            }
+            python MPIN-plus.py `
+                --dataset $dataset `
+                --window $window `
+                --k $k `
+                --epochs $epochs `
+                --prefix $prefixNoPearson `
+                --num_of_iter $numIter `
+                --base $base `
+                --eval_ratio $eval `
+                --stream $stream `
+                --use_pearson false
         }
     }
+
+
+    # foreach ($base in $bases) {
+    #     foreach ($eval in $evalRatios) {
+    #         foreach ($delta in $deltas) {
+    #             $current++
+    #             Write-Host "[$current/$totalExperiments] dataset=$dataset base=$base eval=$eval pearson=true delta=$delta"
+
+    #             python MPIN-plus.py `
+    #                 --dataset $dataset `
+    #                 --window $window `
+    #                 --k $k `
+    #                 --epochs $epochs `
+    #                 --prefix $prefixPearson `
+    #                 --num_of_iter $numIter `
+    #                 --base $base `
+    #                 --eval_ratio $eval `
+    #                 --stream $stream `
+    #                 --use_pearson true `
+    #                 --delta $delta
+    #         }
+    #     }
+    # }
 
     $globalEnd = Get-Date
     $duration = $globalEnd - $globalStart
