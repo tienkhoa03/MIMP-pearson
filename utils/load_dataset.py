@@ -436,6 +436,31 @@ def load_IBRL_dataset(method='saits'):
         return X.reshape(-1, len(features))
 
 
+def load_IBRL_dataset_all(method='saits', stream=1):
+    """Load all Intel Berkeley Research Lab (labsensor) data"""
+    X = load_IBRL_dataset(method='mpin')  # Get the full dataset
+    # X shape: (num_epochs, num_motes, num_features)
+    
+    if method == 'saits':
+        # For continuous experiments, reshape to (num_epochs, num_motes, num_features)
+        return X
+    else:
+        # For other methods, return flattened shape (num_epochs*num_motes, num_features)
+        return X.reshape(-1, X.shape[-1])
+def load_IBRL_dataset_all(method='saits', stream=1):
+    """Load all Intel Berkeley Research Lab (labsensor) data for continuous experiments.
+    Returns data in 2D format (num_samples, num_features) where num_samples = num_epochs * num_motes
+    """
+    # Load data in flattened 2D format suitable for continuous experiments
+    X = load_IBRL_dataset(method='mpin')
+    # X shape: (num_epochs * num_motes, 3) where 3 features are [temperature, humidity, light]
+    
+    # Ensure all numeric conversion to handle any potential string/object types
+    X = np.asarray(X, dtype=float)
+    
+    return X
+
+
 # a = load_airquality_dataset()
 
 # load_ICU_dataset()

@@ -1,10 +1,6 @@
-# Snapshot batch experiments for Labsensor
-# Cases:
-# - base: SAGE++DAC, SAGE++DAMC
-# - eval_ratio: 0.1, 0.3, 0.5
-# - no Pearson
-# - Pearson delta: 0.1..0.9
-# Fixed window length: 30
+# Continuous batch experiments for Labsensor (Intel Berkeley Research Lab)
+# Sensor data with 3 features: temperature, humidity, light
+# Fixed window length: 24 (epochs)
 # Usage: .\run_labsensor_experiments.ps1
 
 Set-StrictMode -Version Latest
@@ -13,16 +9,19 @@ $ErrorActionPreference = "Stop"
 Push-Location $PSScriptRoot
 try {
     Write-Host "========================================" -ForegroundColor Green
-    Write-Host "Snapshot Labsensor Experiments" -ForegroundColor Green
+    Write-Host "Continuous Labsensor Experiments" -ForegroundColor Green
     Write-Host "========================================" -ForegroundColor Green
 
     $dataset = "Labsensor"
-    $window = 30
-    $bases = @("SAGE++DAC", "SAGE++DAMC")
+    $window = 24
+    $bases = @("SAGE++DAMC")
     $evalRatios = @(0.1, 0.3, 0.5)
     $deltas = @(0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9)
 
-    $stream = 0.01
+    $epochs = 200
+    $numIter = 1
+    $k = 10
+    $stream = 1.0
     $prefixNoPearson = "no_pearson"
     $prefixPearson = "pearson"
 
@@ -30,15 +29,19 @@ try {
     $current = 0
     $globalStart = Get-Date
 
+    # Run experiments without Pearson filtering
     foreach ($base in $bases) {
         foreach ($eval in $evalRatios) {
             $current++
-            Write-Host "[$current/$totalExperiments] dataset=$dataset base=$base eval=$eval pearson=false"
+            Write-Host "[$current/$totalExperiments] dataset=$dataset base=$base eval=$eval pearson=false" -ForegroundColor Cyan
 
-            python MPIN-plus.py `
+            python continuous.py `
                 --dataset $dataset `
                 --window $window `
+                --k $k `
+                --epochs $epochs `
                 --prefix $prefixNoPearson `
+                --num_of_iter $numIter `
                 --base $base `
                 --eval_ratio $eval `
                 --stream $stream `
@@ -46,16 +49,20 @@ try {
         }
     }
 
+    # Run experiments with Pearson filtering
     foreach ($base in $bases) {
         foreach ($eval in $evalRatios) {
             foreach ($delta in $deltas) {
                 $current++
-                Write-Host "[$current/$totalExperiments] dataset=$dataset base=$base eval=$eval pearson=true delta=$delta"
+                Write-Host "[$current/$totalExperiments] dataset=$dataset base=$base eval=$eval pearson=true delta=$delta" -ForegroundColor Cyan
 
-                python MPIN-plus.py `
+                python continuous.py `
                     --dataset $dataset `
                     --window $window `
+                    --k $k `
+                    --epochs $epochs `
                     --prefix $prefixPearson `
+                    --num_of_iter $numIter `
                     --base $base `
                     --eval_ratio $eval `
                     --stream $stream `
@@ -66,8 +73,8 @@ try {
     }
 
     $globalEnd = Get-Date
-    $duration = $globalEnd - $globalStart
-    Write-Host "Completed $totalExperiments experiments in $($duration.TotalMinutes.ToString('F2')) minutes." -ForegroundColor Green
+    $elapsed = ($globalEnd - $globalStart).TotalSeconds
+    Write-Host "Completed $totalExperiments experiments in $([Math]::Round($elapsed/60, 2)) minutes." -ForegroundColor Green
 }
 finally {
     Pop-Location

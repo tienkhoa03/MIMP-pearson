@@ -32,7 +32,7 @@ from utils.DynamicGNN import (
 )
 from argparse import ArgumentParser
 from torch_geometric.nn import knn_graph
-from utils.load_dataset import load_ICU_dataset_all, load_airquality_dataset_all, load_WiFi_dataset_all, get_model_size
+from utils.load_dataset import load_ICU_dataset_all, load_airquality_dataset_all, load_WiFi_dataset_all, load_IBRL_dataset_all, get_model_size
 from pypots.utils.metrics import cal_mae, cal_mse, cal_mre
 from sklearn.preprocessing import StandardScaler
 from torch_geometric.utils import to_dense_adj
@@ -155,6 +155,17 @@ elif args.dataset == 'Airquality':
     print('std_X', std_X)
     base_X = (base_X - mean_X) / std_X
     print('base Airquality data shape:', base_X.shape, base_X_mask.shape)
+elif args.dataset == 'Labsensor':
+    print('dataset:Labsensor')
+    base_X = load_IBRL_dataset_all(method='mpin', stream=args.stream)
+    base_X_mask = (~np.isnan(base_X)).astype(int)
+    base_X = np.nan_to_num(base_X)
+    mean_X = np.mean(base_X)
+    print('mean_X', mean_X)
+    std_X = np.std(base_X)
+    print('std_X', std_X)
+    base_X = (base_X - mean_X) / std_X
+    print('base Labsensor data shape:', base_X.shape, base_X_mask.shape)
 
 # elif args.dataset == 'ICU':
 #     print('dataset:physionet')
