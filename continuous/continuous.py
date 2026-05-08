@@ -587,6 +587,8 @@ elif args.dataset == 'Airquality':
     num_windows = int(24/args.window)
 elif args.dataset == 'LHS':
     num_windows = int(200/args.window)
+elif args.dataset == 'Labsensor':
+    num_windows = int(65536/args.window)
 
 
 results_schema = ['opt_epoch', 'opt_mae', 'mse', 'mape', 'para', 'memo', 'opt_time', 'tot_time']

@@ -13,61 +13,69 @@ try {
     Write-Host "========================================" -ForegroundColor Green
 
     $dataset = "Labsensor"
-    $window = 24
+    $window = 30
     $bases = @("SAGE++DAMC")
-    $evalRatios = @(0.1, 0.3, 0.5)
+    $evalRatios = @(0.3)
     $deltas = @(0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9)
+    $streams = @(0.01, 0.1)
 
     $epochs = 200
-    $numIter = 1
+    $numIter = 5
     $k = 10
-    $stream = 1.0
     $prefixNoPearson = "no_pearson"
     $prefixPearson = "pearson"
 
-    $totalExperiments = ($bases.Count * $evalRatios.Count) + ($bases.Count * $evalRatios.Count * $deltas.Count)
+    $expsPerStream = ($bases.Count * $evalRatios.Count) + ($bases.Count * $evalRatios.Count * $deltas.Count)
+    $totalExperiments = $expsPerStream * $streams.Count
     $current = 0
     $globalStart = Get-Date
 
-    # Run experiments without Pearson filtering
-    foreach ($base in $bases) {
-        foreach ($eval in $evalRatios) {
-            $current++
-            Write-Host "[$current/$totalExperiments] dataset=$dataset base=$base eval=$eval pearson=false" -ForegroundColor Cyan
+    # Run experiments for each stream value
+    foreach ($streamVal in $streams) {
+        Write-Host ""
+        Write-Host "========== Starting experiments with stream=$streamVal ==========" -ForegroundColor Yellow
+        Write-Host ""
 
-            python continuous.py `
-                --dataset $dataset `
-                --window $window `
-                --k $k `
-                --epochs $epochs `
-                --prefix $prefixNoPearson `
-                --num_of_iter $numIter `
-                --base $base `
-                --eval_ratio $eval `
-                --stream $stream `
-                --use_pearson false
-        }
-    }
-
-    # Run experiments with Pearson filtering
-    foreach ($base in $bases) {
-        foreach ($eval in $evalRatios) {
-            foreach ($delta in $deltas) {
+        # Run experiments without Pearson filtering
+        foreach ($base in $bases) {
+            foreach ($eval in $evalRatios) {
                 $current++
-                Write-Host "[$current/$totalExperiments] dataset=$dataset base=$base eval=$eval pearson=true delta=$delta" -ForegroundColor Cyan
+                Write-Host "[$current/$totalExperiments] stream=$streamVal dataset=$dataset base=$base eval=$eval pearson=false" -ForegroundColor Cyan
 
                 python continuous.py `
                     --dataset $dataset `
                     --window $window `
                     --k $k `
                     --epochs $epochs `
-                    --prefix $prefixPearson `
+                    --prefix $prefixNoPearson `
                     --num_of_iter $numIter `
                     --base $base `
                     --eval_ratio $eval `
-                    --stream $stream `
-                    --use_pearson true `
-                    --delta $delta
+                    --stream $streamVal `
+                    --use_pearson false
+            }
+        }
+
+        # Run experiments with Pearson filtering
+        foreach ($base in $bases) {
+            foreach ($eval in $evalRatios) {
+                foreach ($delta in $deltas) {
+                    $current++
+                    Write-Host "[$current/$totalExperiments] stream=$streamVal dataset=$dataset base=$base eval=$eval pearson=true delta=$delta" -ForegroundColor Cyan
+
+                    python continuous.py `
+                        --dataset $dataset `
+                        --window $window `
+                        --k $k `
+                        --epochs $epochs `
+                        --prefix $prefixPearson `
+                        --num_of_iter $numIter `
+                        --base $base `
+                        --eval_ratio $eval `
+                        --stream $streamVal `
+                        --use_pearson true `
+                        --delta $delta
+                }
             }
         }
     }
