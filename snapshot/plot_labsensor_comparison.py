@@ -138,7 +138,7 @@ def plot_results(results, out_path=None):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--dir', default='exp_results/Labsensor', help='Directory with Labsensor CSV results')
+    parser.add_argument('--dir', default='exp_results/Labsensor2', help='Directory with Labsensor CSV results')
     parser.add_argument('--out', default='plots/labsensor_comparison.png', help='Output path for combined figure')
     parser.add_argument('--aggregate', default='plots/labsensor_aggregated.csv', help='Path to save aggregated CSV of results')
     args = parser.parse_args()
