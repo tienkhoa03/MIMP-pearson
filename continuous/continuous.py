@@ -298,18 +298,26 @@ def window_imputation(start, end, sample_ratio, initial_state_dict=None, X_last=
 
     gram_vec = gram_matrix.diagonal()
     print('gram vec shp', gram_vec.shape)
-    print('gram vec', gram_vec)
+    if gram_vec.numel() > 100:
+        print(f'gram vec (first 10 of {gram_vec.numel()}): {gram_vec[:10]}')
+    else:
+        print('gram vec', gram_vec)
 
     gram_row_sum = gram_matrix.sum(dim=0)
 
     print('gram_row_sum shp', gram_row_sum.shape)
-
-    print('gram_row_sum', gram_row_sum)
+    if gram_row_sum.numel() > 100:
+        print(f'gram_row_sum (first 10 of {gram_row_sum.numel()}): {gram_row_sum[:10]}')
+    else:
+        print('gram_row_sum', gram_row_sum)
 
     value_vec = gram_vec - (gram_row_sum - gram_vec)/(gram_matrix.shape[0]-1)
 
     print('value_vec shp', value_vec.shape)
-    print('value_vec:', value_vec)
+    if value_vec.numel() > 100:
+        print(f'value_vec (first 10 of {value_vec.numel()}): {value_vec[:10]}')
+    else:
+        print('value_vec:', value_vec)
 
     # print('max min mean median vec values shp:', max(value_vec), min(value_vec), np.mean(value_vec), np.median(value_vec))
 
@@ -597,7 +605,9 @@ elif args.dataset == 'Airquality':
 elif args.dataset == 'LHS':
     num_windows = int(200/args.window)
 elif args.dataset == 'Labsensor':
-    num_windows = int(65536/args.window)
+    # Labsensor is now loaded in 3D format (time_steps, num_samples, features)
+    # where time_steps is 48 (similar to ICU), so use same calculation
+    num_windows = int(48/args.window)
 
 
 results_schema = ['opt_epoch', 'opt_mae', 'mse', 'mape', 'para', 'memo', 'opt_time', 'tot_time']

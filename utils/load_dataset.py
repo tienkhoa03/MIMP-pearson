@@ -437,28 +437,38 @@ def load_IBRL_dataset(method='saits'):
 
 
 def load_IBRL_dataset_all(method='saits', stream=1):
-    """Load all Intel Berkeley Research Lab (labsensor) data"""
-    X = load_IBRL_dataset(method='mpin')  # Get the full dataset
-    # X shape: (num_epochs, num_motes, num_features)
-    
-    if method == 'saits':
-        # For continuous experiments, reshape to (num_epochs, num_motes, num_features)
-        return X
-    else:
-        # For other methods, return flattened shape (num_epochs*num_motes, num_features)
-        return X.reshape(-1, X.shape[-1])
-def load_IBRL_dataset_all(method='saits', stream=1):
     """Load all Intel Berkeley Research Lab (labsensor) data for continuous experiments.
-    Returns data in 2D format (num_samples, num_features) where num_samples = num_epochs * num_motes
+    Returns data in 3D format (num_time_steps, num_samples, num_features) for compatibility
+    with continuous.py, similar to ICU and Airquality datasets.
     """
-    # Load data in flattened 2D format suitable for continuous experiments
-    X = load_IBRL_dataset(method='mpin')
-    # X shape: (num_epochs * num_motes, 3) where 3 features are [temperature, humidity, light]
+    X = load_IBRL_dataset(method='mpin')  # X shape: (num_epochs, num_motes, 3)
     
-    # Ensure all numeric conversion to handle any potential string/object types
-    X = np.asarray(X, dtype=float)
+    # Reshape to flatten motes into features for continuous experiments
+    # (num_epochs, num_motes, 3) -> (num_epochs, num_motes*3) then to (num_samples, num_time_steps, 1)
+    num_epochs, num_motes, num_features = X.shape
     
-    return X
+    # Flatten motes and features: (num_epochs, num_motes*3)
+    X_flat = X.reshape(num_epochs, num_motes * num_features)
+    
+    # Reshape into sliding windows of 48 samples (similar to ICU's 48 hours)
+    window_size = 48
+    num_windows = X_flat.shape[0] // window_size
+    if num_windows == 0:
+        window_size = max(1, X_flat.shape[0] // 4)
+        num_windows = X_flat.shape[0] // window_size
+    
+    X_windowed = X_flat[:num_windows * window_size].reshape(num_windows, window_size, -1)
+    
+    # Apply stream ratio
+    np.random.seed(2021)
+    np.random.shuffle(X_windowed)
+    X_streamed = X_windowed[:max(1, int(num_windows * stream)), :, :]
+    
+    # Transpose to (time_steps, num_samples, features) format for continuous.py
+    # This matches the format returned by ICU and Airquality datasets
+    X_transposed = np.transpose(X_streamed, (1, 0, 2))
+    
+    return X_transposed
 
 
 # a = load_airquality_dataset()
