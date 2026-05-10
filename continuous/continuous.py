@@ -106,11 +106,15 @@ class PearsonGraphState:
         self.pearson_prev = None
 
     def smooth(self, pearson_new):
-        if self.pearson_prev is None:
+        # If we don't have a previous value, or the shapes differ (e.g. different
+        # number of streams across windows), reset the EMA to the new value to
+        # avoid shape-mismatch errors when combining tensors.
+        if self.pearson_prev is None or self.pearson_prev.shape != pearson_new.shape:
             pearson_smoothed = pearson_new
         else:
             pearson_smoothed = self.alpha * pearson_new + (1 - self.alpha) * self.pearson_prev
 
+        # Keep a detached copy for the next call
         self.pearson_prev = pearson_smoothed.detach()
         return pearson_smoothed
 
