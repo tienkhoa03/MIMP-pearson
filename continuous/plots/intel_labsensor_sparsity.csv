@@ -1,0 +1,2 @@
+num_rows,num_cols,total_values,missing_values,observed_values,missing_ratio,observed_ratio,temperature_missing_values,temperature_missing_ratio,humidity_missing_values,humidity_missing_ratio,light_missing_values,light_missing_ratio
+3488540,3,10465620,5075553,5390067,0.484973943254198,0.5150260567458019,1691851,0.484973943254198,1691851,0.484973943254198,1691851,0.484973943254198

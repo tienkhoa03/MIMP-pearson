@@ -20,3 +20,12 @@ pip install torch-geometric
 pip install -r requirements.txt
 pip install --no-deps pypots
 pip install pycorruptor
+
+
+
+python continuous.py --dataset Labsensor --window 30 --k 10 --epochs 200 --prefix no_pearson --num_of_iter 5 --base SAGE++DAMC --eval_ratio 0.3 --stream 0.01 --use_pearson false
+python continuous.py --dataset Labsensor --window 30 --k 10 --epochs 200 --prefix no_pearson --num_of_iter 5 --base SAGE++DAMC --eval_ratio 0.3 --stream 0.1 --use_pearson false
+python continuous.py --dataset Labsensor --window 30 --k 10 --epochs 200 --prefix pearson --num_of_iter 5 --base SAGE++DAMC --eval_ratio 0.3 --stream 0.01 --use_pearson true --delta 0.3
+python continuous.py --dataset Labsensor --window 30 --k 10 --epochs 200 --prefix pearson --num_of_iter 5 --base SAGE++DAMC --eval_ratio 0.3 --stream 0.01 --use_pearson true --delta 0.8
+python continuous.py --dataset Labsensor --window 30 --k 10 --epochs 200 --prefix pearson --num_of_iter 5 --base SAGE++DAMC --eval_ratio 0.3 --stream 0.1 --use_pearson true --delta 0.3
+python continuous.py --dataset Labsensor --window 30 --k 10 --epochs 200 --prefix pearson --num_of_iter 5 --base SAGE++DAMC --eval_ratio 0.3 --stream 0.1 --use_pearson true --delta 0.8
