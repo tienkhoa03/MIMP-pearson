@@ -15,6 +15,7 @@ try {
     $dataset = "Labsensor"
     $window = 30
     $bases = @("SAGE++DAMC")
+    $increModes = @("alone", "data", "transfer", "data+state+transfer")
     $evalRatios = @(0.3)
     $deltas = @(0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9)
     $streams = @(0.01, 0.1)
@@ -25,7 +26,7 @@ try {
     $prefixNoPearson = "no_pearson"
     $prefixPearson = "pearson"
 
-    $expsPerStream = ($bases.Count * $evalRatios.Count) + ($bases.Count * $evalRatios.Count * $deltas.Count)
+    $expsPerStream = ($bases.Count * $increModes.Count * $evalRatios.Count) + ($bases.Count * $increModes.Count * $evalRatios.Count * $deltas.Count)
     $totalExperiments = $expsPerStream * $streams.Count
     $current = 0
     $globalStart = Get-Date
@@ -38,43 +39,49 @@ try {
 
         # Run experiments without Pearson filtering
         foreach ($base in $bases) {
-            foreach ($eval in $evalRatios) {
-                $current++
-                Write-Host "[$current/$totalExperiments] stream=$streamVal dataset=$dataset base=$base eval=$eval pearson=false" -ForegroundColor Cyan
-
-                python continuous.py `
-                    --dataset $dataset `
-                    --window $window `
-                    --k $k `
-                    --epochs $epochs `
-                    --prefix $prefixNoPearson `
-                    --num_of_iter $numIter `
-                    --base $base `
-                    --eval_ratio $eval `
-                    --stream $streamVal `
-                    --use_pearson false
-            }
-        }
-
-        # Run experiments with Pearson filtering
-        foreach ($base in $bases) {
-            foreach ($eval in $evalRatios) {
-                foreach ($delta in $deltas) {
+            foreach ($increMode in $increModes) {
+                foreach ($eval in $evalRatios) {
                     $current++
-                    Write-Host "[$current/$totalExperiments] stream=$streamVal dataset=$dataset base=$base eval=$eval pearson=true delta=$delta" -ForegroundColor Cyan
+                    Write-Host "[$current/$totalExperiments] stream=$streamVal dataset=$dataset base=$base mode=$increMode eval=$eval pearson=false" -ForegroundColor Cyan
 
                     python continuous.py `
                         --dataset $dataset `
                         --window $window `
                         --k $k `
                         --epochs $epochs `
-                        --prefix $prefixPearson `
+                        --prefix $prefixNoPearson `
                         --num_of_iter $numIter `
                         --base $base `
+                        --incre_mode $increMode `
                         --eval_ratio $eval `
                         --stream $streamVal `
-                        --use_pearson true `
-                        --delta $delta
+                        --use_pearson false
+                }
+            }
+        }
+
+        # Run experiments with Pearson filtering
+        foreach ($base in $bases) {
+            foreach ($increMode in $increModes) {
+                foreach ($eval in $evalRatios) {
+                    foreach ($delta in $deltas) {
+                        $current++
+                        Write-Host "[$current/$totalExperiments] stream=$streamVal dataset=$dataset base=$base mode=$increMode eval=$eval pearson=true delta=$delta" -ForegroundColor Cyan
+
+                        python continuous.py `
+                            --dataset $dataset `
+                            --window $window `
+                            --k $k `
+                            --epochs $epochs `
+                            --prefix $prefixPearson `
+                            --num_of_iter $numIter `
+                            --base $base `
+                            --incre_mode $increMode `
+                            --eval_ratio $eval `
+                            --stream $streamVal `
+                            --use_pearson true `
+                            --delta $delta
+                    }
                 }
             }
         }
