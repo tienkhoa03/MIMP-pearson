@@ -22,7 +22,7 @@ try {
     $window = 4
     $bases = @("SAGE++DAMC")
     $evalRatios = @(0.5)
-    $deltas = @(0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9)
+    $deltas = @(0.5)
     $streamRatios = @(0.001, 0.01, 0.1, 1.0)
     $increModes = @("alone", "data", "transfer", "data+state+transfer")
 
@@ -36,29 +36,29 @@ try {
     $current = 0
     $globalStart = Get-Date
 
-    foreach ($base in $bases) {
-        foreach ($eval in $evalRatios) {
-            foreach ($stream in $streamRatios) {
-                foreach ($increMode in $increModes) {
-                    $current++
-                    Write-Host "[$current/$totalExperiments] dataset=$dataset base=$base eval=$eval pearson=false stream=$stream incre_mode=$increMode"
+    # foreach ($base in $bases) {
+    #     foreach ($eval in $evalRatios) {
+    #         foreach ($stream in $streamRatios) {
+    #             foreach ($increMode in $increModes) {
+    #                 $current++
+    #                 Write-Host "[$current/$totalExperiments] dataset=$dataset base=$base eval=$eval pearson=false stream=$stream incre_mode=$increMode"
 
-                    python continuous.py `
-                        --dataset $dataset `
-                        --window $window `
-                        --k $k `
-                        --epochs $epochs `
-                        --prefix $prefixNoPearson `
-                        --num_of_iter $numIter `
-                        --base $base `
-                        --eval_ratio $eval `
-                        --stream $stream `
-                        --incre_mode $increMode `
-                        --use_pearson false
-                }
-            }
-        }
-    }
+    #                 python continuous.py `
+    #                     --dataset $dataset `
+    #                     --window $window `
+    #                     --k $k `
+    #                     --epochs $epochs `
+    #                     --prefix $prefixNoPearson `
+    #                     --num_of_iter $numIter `
+    #                     --base $base `
+    #                     --eval_ratio $eval `
+    #                     --stream $stream `
+    #                     --incre_mode $increMode `
+    #                     --use_pearson false
+    #             }
+    #         }
+    #     }
+    # }
 
     foreach ($base in $bases) {
         foreach ($eval in $evalRatios) {

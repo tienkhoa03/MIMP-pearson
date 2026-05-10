@@ -17,7 +17,7 @@ try {
     $bases = @("SAGE++DAMC")
     $increModes = @("alone", "data", "transfer", "data+state+transfer")
     $evalRatios = @(0.3)
-    $deltas = @(0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9)
+    $deltas = @(0.8)
     $streams = @(0.1, 0.5, 1.0)
 
     $epochs = 200
@@ -32,33 +32,33 @@ try {
     $globalStart = Get-Date
 
     # Run experiments for each stream value
-    foreach ($streamVal in $streams) {
-        Write-Host ""
-        Write-Host "========== Starting experiments with stream=$streamVal ==========" -ForegroundColor Yellow
-        Write-Host ""
+    # foreach ($streamVal in $streams) {
+    #     Write-Host ""
+    #     Write-Host "========== Starting experiments with stream=$streamVal ==========" -ForegroundColor Yellow
+    #     Write-Host ""
 
-        # Run experiments without Pearson filtering
-        foreach ($base in $bases) {
-            foreach ($increMode in $increModes) {
-                foreach ($eval in $evalRatios) {
-                    $current++
-                    Write-Host "[$current/$totalExperiments] stream=$streamVal dataset=$dataset base=$base mode=$increMode eval=$eval pearson=false" -ForegroundColor Cyan
+    #     # Run experiments without Pearson filtering
+    #     foreach ($base in $bases) {
+    #         foreach ($increMode in $increModes) {
+    #             foreach ($eval in $evalRatios) {
+    #                 $current++
+    #                 Write-Host "[$current/$totalExperiments] stream=$streamVal dataset=$dataset base=$base mode=$increMode eval=$eval pearson=false" -ForegroundColor Cyan
 
-                    python continuous.py `
-                        --dataset $dataset `
-                        --window $window `
-                        --k $k `
-                        --epochs $epochs `
-                        --prefix $prefixNoPearson `
-                        --num_of_iter $numIter `
-                        --base $base `
-                        --incre_mode $increMode `
-                        --eval_ratio $eval `
-                        --stream $streamVal `
-                        --use_pearson false
-                }
-            }
-        }
+    #                 python continuous.py `
+    #                     --dataset $dataset `
+    #                     --window $window `
+    #                     --k $k `
+    #                     --epochs $epochs `
+    #                     --prefix $prefixNoPearson `
+    #                     --num_of_iter $numIter `
+    #                     --base $base `
+    #                     --incre_mode $increMode `
+    #                     --eval_ratio $eval `
+    #                     --stream $streamVal `
+    #                     --use_pearson false
+    #             }
+    #         }
+    #     }
 
         # Run experiments with Pearson filtering
         foreach ($base in $bases) {
