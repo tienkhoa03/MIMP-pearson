@@ -287,23 +287,20 @@ def window_imputation(start, end, sample_ratio, initial_state_dict=None, X_last=
 
     all_mask_ts = torch.FloatTensor(all_mask).to(device)
 
-    # gram_matrix = all_mask_ts.matmul(all_mask_ts.transpose(1,0))
+    # Compute the same statistics as gram_matrix = all_mask_ts @ all_mask_ts.T
+    # without materializing the full NxN matrix (which is very memory heavy).
+    num_rows = all_mask_ts.shape[0]
+    print('gram_matrix shp', (num_rows, num_rows))
 
-    gram_matrix = torch.mm(all_mask_ts, all_mask_ts.t())  # compute the gram product
-
-
-    # gram_matrix = all_mask @ (all_mask.transpose())
-    print('gram_matrix shp', gram_matrix.shape)
-    # print('gram_matrix', gram_matrix)
-
-    gram_vec = gram_matrix.diagonal()
+    gram_vec = (all_mask_ts * all_mask_ts).sum(dim=1)
     print('gram vec shp', gram_vec.shape)
     if gram_vec.numel() > 100:
         print(f'gram vec (first 10 of {gram_vec.numel()}): {gram_vec[:10]}')
     else:
         print('gram vec', gram_vec)
 
-    gram_row_sum = gram_matrix.sum(dim=0)
+    col_sum = all_mask_ts.sum(dim=0)
+    gram_row_sum = torch.mv(all_mask_ts, col_sum)
 
     print('gram_row_sum shp', gram_row_sum.shape)
     if gram_row_sum.numel() > 100:
@@ -311,7 +308,10 @@ def window_imputation(start, end, sample_ratio, initial_state_dict=None, X_last=
     else:
         print('gram_row_sum', gram_row_sum)
 
-    value_vec = gram_vec - (gram_row_sum - gram_vec)/(gram_matrix.shape[0]-1)
+    if num_rows > 1:
+        value_vec = gram_vec - (gram_row_sum - gram_vec) / (num_rows - 1)
+    else:
+        value_vec = gram_vec.clone()
 
     print('value_vec shp', value_vec.shape)
     if value_vec.numel() > 100:
@@ -329,7 +329,10 @@ def window_imputation(start, end, sample_ratio, initial_state_dict=None, X_last=
 
     keep_X = all_X[keep_index]
 
-    print('keep_index', keep_index)
+    if keep_index.shape[0] > 100:
+        print(f'keep_index count={keep_index.shape[0]}, first 10={keep_index[:10]}')
+    else:
+        print('keep_index', keep_index)
     print('keep_mask shp', keep_mask.shape)
     print('keep_X shp', keep_X.shape)
 

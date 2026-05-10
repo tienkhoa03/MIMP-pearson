@@ -18,8 +18,13 @@ def compute_stream_pearson(X, window_length, layout="stream_major"):
     X = X.contiguous()
     num_nodes, num_features = X.shape
 
-    if num_nodes % window_length != 0:
-        raise ValueError("num_nodes must be divisible by window_length")
+    remainder = num_nodes % window_length
+    if remainder != 0:
+        usable_nodes = num_nodes - remainder
+        if usable_nodes <= 0:
+            raise ValueError("num_nodes must be at least window_length")
+        X = X[:usable_nodes]
+        num_nodes = usable_nodes
 
     num_streams = num_nodes // window_length
 
@@ -55,8 +60,13 @@ def build_similarity_graph(
     if num_nodes <= 1 or k <= 0:
         return torch.empty((2, 0), dtype=torch.long, device=device)
 
-    if num_nodes % window_length != 0:
-        raise ValueError("num_nodes must be divisible by window_length")
+    remainder = num_nodes % window_length
+    if remainder != 0:
+        usable_nodes = num_nodes - remainder
+        if usable_nodes <= 1:
+            return torch.empty((2, 0), dtype=torch.long, device=device)
+        X = X[:usable_nodes]
+        num_nodes = usable_nodes
 
     num_streams = num_nodes // window_length
     if pearson_matrix.shape[0] != num_streams:
