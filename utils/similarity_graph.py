@@ -79,31 +79,55 @@ def build_similarity_graph(
         return torch.empty((2, 0), dtype=torch.long, device=device)
 
     if layout == "stream_major":
-        node_stream_ids = torch.arange(num_streams, device=device).repeat_interleave(
-            window_length
-        )
+        node_indices = torch.arange(num_nodes, device=device).view(num_streams, window_length)
     elif layout == "time_major":
-        node_stream_ids = torch.arange(num_streams, device=device).repeat(window_length)
+        node_indices = (
+            torch.arange(num_nodes, device=device)
+            .view(window_length, num_streams)
+            .transpose(0, 1)
+            .contiguous()
+        )
     else:
         raise ValueError("layout must be 'stream_major' or 'time_major'")
 
-    candidate_mask = pearson_mask[node_stream_ids][:, node_stream_ids]
-    candidate_mask.fill_diagonal_(False)
+    src_chunks = []
+    dst_chunks = []
 
-    distances = torch.cdist(X, X, p=2)
-    distances = distances.masked_fill(~candidate_mask, float("inf"))
+    for stream_idx in range(num_streams):
+        candidate_streams = torch.where(pearson_mask[stream_idx])[0]
+        if candidate_streams.numel() == 0:
+            continue
 
-    k_eff = min(k, max(num_nodes - 1, 1))
-    topk_vals, topk_idx = torch.topk(distances, k_eff, dim=1, largest=False)
-    valid = torch.isfinite(topk_vals)
-    if not valid.any():
+        query_nodes = node_indices[stream_idx]
+        candidate_nodes = node_indices[candidate_streams].reshape(-1)
+        if candidate_nodes.numel() == 0:
+            continue
+
+        k_eff = min(k, int(candidate_nodes.numel()))
+        if k_eff <= 0:
+            continue
+
+        query_x = X[query_nodes]
+        candidate_x = X[candidate_nodes]
+        distances = torch.cdist(query_x, candidate_x, p=2)
+        topk_vals, topk_idx = torch.topk(distances, k_eff, dim=1, largest=False)
+        valid = torch.isfinite(topk_vals)
+        if not valid.any():
+            continue
+
+        src = query_nodes.unsqueeze(1).expand(-1, k_eff).reshape(-1)
+        dst = candidate_nodes[topk_idx.reshape(-1)]
+        valid_flat = valid.reshape(-1)
+
+        src_chunks.append(src[valid_flat])
+        dst_chunks.append(dst[valid_flat])
+
+    if not src_chunks:
         return torch.empty((2, 0), dtype=torch.long, device=device)
 
-    src = torch.arange(num_nodes, device=device).unsqueeze(1).expand(-1, k_eff).reshape(-1)
-    dst = topk_idx.reshape(-1)
-    valid_flat = valid.reshape(-1)
-
-    return torch.stack([src[valid_flat], dst[valid_flat]], dim=0)
+    src_all = torch.cat(src_chunks)
+    dst_all = torch.cat(dst_chunks)
+    return torch.stack([src_all, dst_all], dim=0)
 
 
 def get_similarity_graph(

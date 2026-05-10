@@ -75,6 +75,26 @@ parser.add_argument("--pearson_alpha", type=float, default=0.6, help="EMA alpha 
 
 
 args = parser.parse_args()
+
+incre_mode_aliases = {
+    "data+state+transferr": "data+state+transfer",
+    "state+transferr": "state+transfer",
+}
+args.incre_mode = incre_mode_aliases.get(args.incre_mode, args.incre_mode)
+
+valid_incre_modes = {
+    "alone",
+    "data",
+    "state",
+    "state+transfer",
+    "data+state",
+    "data+state+transfer",
+}
+if args.incre_mode not in valid_incre_modes:
+    raise ValueError(
+        f"Invalid incre_mode '{args.incre_mode}'. Valid values: {sorted(valid_incre_modes)}"
+    )
+
 starting_time = datetime.now()
 print('starting time:', starting_time)
 torch.random.manual_seed(2021)
@@ -489,6 +509,23 @@ def window_imputation(start, end, sample_ratio, initial_state_dict=None, X_last=
             )
             if edge_index.numel() == 0:
                 print("Warning: No edges after Pearson filter; using standard KNN.")
+                edge_index = knn_graph(X_knn, args.k, batch=None, loop=False, cosine=False)
+        except RuntimeError as exc:
+            if "out of memory" not in str(exc).lower():
+                raise
+            print("Pearson graph CUDA OOM, retrying on CPU.")
+            if torch.cuda.is_available():
+                torch.cuda.empty_cache()
+            edge_index = build_similarity_graph(
+                X_knn.detach().cpu(),
+                pearson_used.detach().cpu(),
+                window_length=args.window,
+                k=args.k,
+                delta=args.delta,
+                layout="time_major",
+            ).to(X_knn.device)
+            if edge_index.numel() == 0:
+                print("Warning: No edges after Pearson filter on CPU; using standard KNN.")
                 edge_index = knn_graph(X_knn, args.k, batch=None, loop=False, cosine=False)
         except ValueError as exc:
             print(f"Pearson graph fallback to KNN: {exc}")
