@@ -18,7 +18,7 @@ try {
     $increModes = @("alone", "data", "transfer", "data+state+transfer")
     $evalRatios = @(0.3)
     $deltas = @(0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9)
-    $streams = @(0.01, 0.1)
+    $streams = @(0.1, 0.5, 1.0)
 
     $epochs = 200
     $numIter = 5
