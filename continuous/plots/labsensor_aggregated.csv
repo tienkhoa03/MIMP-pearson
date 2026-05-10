@@ -1,0 +1,21 @@
+source_file,Unnamed: 0,opt_epoch,opt_mae,mse,mape,para,memo,opt_time,tot_time
+iif_exp\Labsensor\pearson_Labsensor_DMU_alone_10_SAGE++DAMC_window_30_epoch_200_eval_0.3_stream_0.0001_state_true_thre_0.25_delta_0.8.csv,0,171.4,0.034,0.002,0.0291,0.8217,3.1344,0.1955,0.2181
+iif_exp\Labsensor\pearson_Labsensor_DMU_alone_10_SAGE++DAMC_window_30_epoch_200_eval_0.3_stream_0.01_state_true_thre_0.25_delta_0.8.csv,0,140.0,0.6234,1.1098,0.5651,0.8217,3.1344,0.0481,0.0682
+iif_exp\Labsensor\pearson_Labsensor_DMU_alone_10_SAGE++DAMC_window_30_epoch_200_eval_0.3_stream_0.1_state_true_thre_0.25_delta_0.8.csv,0,44.2,0.8042,1.4159,0.7466,0.8217,3.1344,0.0234,0.0872
+iif_exp\Labsensor\pearson_Labsensor_DMU_alone_10_SAGE++DAMC_window_30_epoch_200_eval_0.3_stream_0.5_state_true_thre_0.25_delta_0.8.csv,0,69.0,0.7931,1.3315,0.7483,0.8217,3.1344,0.1376,0.3209
+iif_exp\Labsensor\pearson_Labsensor_DMU_alone_10_SAGE++DAMC_window_30_epoch_200_eval_0.3_stream_1.0_state_true_thre_0.25_delta_0.8.csv,0,65.4,0.7888,1.3139,0.7483,0.8217,3.1344,0.309,0.6779
+iif_exp\Labsensor\pearson_Labsensor_DMU_data+state+transfer_10_SAGE++DAMC_window_30_epoch_200_eval_0.3_stream_0.0001_state_true_thre_0.25_delta_0.8.csv,0,151.4,0.0337,0.002,0.0288,0.8217,3.1344,0.1465,0.2063
+iif_exp\Labsensor\pearson_Labsensor_DMU_data+state+transfer_10_SAGE++DAMC_window_30_epoch_200_eval_0.3_stream_0.01_state_true_thre_0.25_delta_0.8.csv,0,121.6,0.6245,1.1111,0.5661,0.8217,3.1344,0.0423,0.069
+iif_exp\Labsensor\pearson_Labsensor_DMU_data+state+transfer_10_SAGE++DAMC_window_30_epoch_200_eval_0.3_stream_0.1_state_true_thre_0.25_delta_0.8.csv,0,58.0,0.8033,1.416,0.7458,0.8217,3.1344,0.0294,0.0875
+iif_exp\Labsensor\pearson_Labsensor_DMU_data+state+transfer_10_SAGE++DAMC_window_30_epoch_200_eval_0.3_stream_0.5_state_true_thre_0.25_delta_0.8.csv,0,79.8,0.7936,1.3344,0.7488,0.8217,3.1344,0.1519,0.3192
+iif_exp\Labsensor\pearson_Labsensor_DMU_data+state+transfer_10_SAGE++DAMC_window_30_epoch_200_eval_0.3_stream_1.0_state_true_thre_0.25_delta_0.8.csv,0,53.0,0.7888,1.3166,0.7483,0.8217,3.1344,0.2828,0.7005
+iif_exp\Labsensor\pearson_Labsensor_DMU_data_10_SAGE++DAMC_window_30_epoch_200_eval_0.3_stream_0.0001_state_true_thre_0.25_delta_0.8.csv,0,158.6,0.035,0.0022,0.03,0.8217,3.1344,0.1554,0.1971
+iif_exp\Labsensor\pearson_Labsensor_DMU_data_10_SAGE++DAMC_window_30_epoch_200_eval_0.3_stream_0.01_state_true_thre_0.25_delta_0.8.csv,0,142.8,0.6234,1.1097,0.5651,0.8217,3.1344,0.049,0.068
+iif_exp\Labsensor\pearson_Labsensor_DMU_data_10_SAGE++DAMC_window_30_epoch_200_eval_0.3_stream_0.1_state_true_thre_0.25_delta_0.8.csv,0,57.2,0.8038,1.4152,0.7463,0.8217,3.1344,0.0288,0.0873
+iif_exp\Labsensor\pearson_Labsensor_DMU_data_10_SAGE++DAMC_window_30_epoch_200_eval_0.3_stream_0.5_state_true_thre_0.25_delta_0.8.csv,0,76.0,0.7932,1.3316,0.7485,0.8217,3.1344,0.1465,0.3188
+iif_exp\Labsensor\pearson_Labsensor_DMU_data_10_SAGE++DAMC_window_30_epoch_200_eval_0.3_stream_1.0_state_true_thre_0.25_delta_0.8.csv,0,65.4,0.7885,1.3163,0.748,0.8217,3.1344,0.3097,0.6783
+iif_exp\Labsensor\pearson_Labsensor_DMU_transfer_10_SAGE++DAMC_window_30_epoch_200_eval_0.3_stream_0.0001_state_true_thre_0.25_delta_0.8.csv,0,167.0,0.0354,0.0024,0.0303,0.8217,3.1344,0.1755,0.2091
+iif_exp\Labsensor\pearson_Labsensor_DMU_transfer_10_SAGE++DAMC_window_30_epoch_200_eval_0.3_stream_0.01_state_true_thre_0.25_delta_0.8.csv,0,126.6,0.6231,1.1111,0.5649,0.8217,3.1344,0.0437,0.069
+iif_exp\Labsensor\pearson_Labsensor_DMU_transfer_10_SAGE++DAMC_window_30_epoch_200_eval_0.3_stream_0.1_state_true_thre_0.25_delta_0.8.csv,0,40.8,0.8037,1.4156,0.7461,0.8217,3.1344,0.0224,0.0876
+iif_exp\Labsensor\pearson_Labsensor_DMU_transfer_10_SAGE++DAMC_window_30_epoch_200_eval_0.3_stream_0.5_state_true_thre_0.25_delta_0.8.csv,0,62.8,0.793,1.3322,0.7482,0.8217,3.1344,0.128,0.3189
+iif_exp\Labsensor\pearson_Labsensor_DMU_transfer_10_SAGE++DAMC_window_30_epoch_200_eval_0.3_stream_1.0_state_true_thre_0.25_delta_0.8.csv,0,67.6,0.7886,1.3156,0.7481,0.8217,3.1344,0.318,0.6851
