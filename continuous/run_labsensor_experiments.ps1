@@ -32,10 +32,10 @@ try {
     $globalStart = Get-Date
 
     # Run experiments for each stream value
-    # foreach ($streamVal in $streams) {
-    #     Write-Host ""
-    #     Write-Host "========== Starting experiments with stream=$streamVal ==========" -ForegroundColor Yellow
-    #     Write-Host ""
+    foreach ($streamVal in $streams) {
+        Write-Host ""
+        Write-Host "========== Starting experiments with stream=$streamVal ==========" -ForegroundColor Yellow
+        Write-Host ""
 
     #     # Run experiments without Pearson filtering
     #     foreach ($base in $bases) {
