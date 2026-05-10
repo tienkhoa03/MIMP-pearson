@@ -273,14 +273,36 @@ def window_imputation(start, end, sample_ratio, initial_state_dict=None, X_last=
     #     all_X = copy.copy(X)
 
     if X_last is not None:
-        X_last = np.array(X_last)
-        # eval_X = np.concatenate([X_last, X], axis=0)
-        all_X = np.concatenate([X_last, X], axis=0)
-        # eval_mask_last = np.zeros(shp_last)
-        # eval_mask = np.concatenate([eval_mask_last, eval_mask],axis=0)
-        all_mask = np.concatenate([mask_last, X_mask], axis=0)
+        X_last = np.asarray(X_last)
+        mask_last = np.asarray(mask_last)
 
-        X_last = X_last.tolist()
+        # Ensure X_last is 2D with shape (rows, feature_dim)
+        if X_last.ndim == 1:
+            if X_last.size == feature_dim:
+                X_last = X_last.reshape(1, -1)
+            elif X_last.size % feature_dim == 0:
+                X_last = X_last.reshape(-1, feature_dim)
+            else:
+                raise ValueError(f"X_last size {X_last.shape} incompatible with feature_dim {feature_dim}")
+        elif X_last.ndim > 2:
+            raise ValueError(f"X_last has too many dimensions: {X_last.shape}")
+
+        # Ensure mask_last is 2D and aligns with feature_dim
+        if mask_last.ndim == 1:
+            if mask_last.size == feature_dim:
+                mask_last = mask_last.reshape(1, -1)
+            elif mask_last.size % feature_dim == 0:
+                mask_last = mask_last.reshape(-1, feature_dim)
+            else:
+                raise ValueError(f"mask_last size {mask_last.shape} incompatible with feature_dim {feature_dim}")
+        elif mask_last.ndim > 2:
+            raise ValueError(f"mask_last has too many dimensions: {mask_last.shape}")
+
+        if X_last.shape[1] != feature_dim or mask_last.shape[1] != feature_dim:
+            raise ValueError(f"feature dimension mismatch: feature_dim={feature_dim}, X_last.shape={X_last.shape}, mask_last.shape={mask_last.shape}")
+
+        all_X = np.concatenate([X_last, X], axis=0)
+        all_mask = np.concatenate([mask_last, X_mask], axis=0)
 
     print('all mask shp', all_mask.shape)
     print('all X shp', all_X.shape)
@@ -350,7 +372,33 @@ def window_imputation(start, end, sample_ratio, initial_state_dict=None, X_last=
 
     if X_last is not None:
 
-        X_last = np.array(X_last)
+        X_last = np.asarray(X_last)
+        mask_last = np.asarray(mask_last)
+
+        # Ensure X_last is 2D and aligned with feature_dim
+        if X_last.ndim == 1:
+            if X_last.size == feature_dim:
+                X_last = X_last.reshape(1, -1)
+            elif X_last.size % feature_dim == 0:
+                X_last = X_last.reshape(-1, feature_dim)
+            else:
+                raise ValueError(f"X_last size {X_last.shape} incompatible with feature_dim {feature_dim}")
+        elif X_last.ndim > 2:
+            raise ValueError(f"X_last has too many dimensions: {X_last.shape}")
+
+        if mask_last.ndim == 1:
+            if mask_last.size == feature_dim:
+                mask_last = mask_last.reshape(1, -1)
+            elif mask_last.size % feature_dim == 0:
+                mask_last = mask_last.reshape(-1, feature_dim)
+            else:
+                raise ValueError(f"mask_last size {mask_last.shape} incompatible with feature_dim {feature_dim}")
+        elif mask_last.ndim > 2:
+            raise ValueError(f"mask_last has too many dimensions: {mask_last.shape}")
+
+        if X_last.shape[1] != feature_dim or mask_last.shape[1] != feature_dim:
+            raise ValueError(f"feature dimension mismatch: feature_dim={feature_dim}, X_last.shape={X_last.shape}, mask_last.shape={mask_last.shape}")
+
         shp_last = X_last.shape
         eval_X = np.concatenate([X_last, eval_X], axis=0)
         X = np.concatenate([X_last, X], axis=0)

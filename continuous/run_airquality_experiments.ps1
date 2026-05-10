@@ -24,7 +24,7 @@ try {
     $evalRatios = @(0.8)
     $deltas = @(0.8)
     $streamRatios = @(0.001, 0.01, 0.1, 1.0)
-    $increModes = @("alone", "data", "transfer", "data+state+transfer")
+    $increModes = @("data", "data+state+transfer")
 
     $epochs = 200
     $numIter = 5
