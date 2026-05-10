@@ -78,8 +78,17 @@ args = parser.parse_args()
 starting_time = datetime.now()
 print('starting time:', starting_time)
 torch.random.manual_seed(2021)
-# device = torch.device('cuda')
-device = torch.device('cpu')
+
+def get_device():
+    if torch.cuda.is_available():
+        selected = torch.device('cuda')
+        print('Using CUDA GPU:', torch.cuda.get_device_name(0))
+        return selected
+
+    print('CUDA is not available. Using CPU.')
+    return torch.device('cpu')
+
+device = get_device()
 
 out_channels = args.out_channels
 lr = args.lr
