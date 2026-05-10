@@ -107,7 +107,7 @@ def gather_results(directory, aggregate_out=None):
 
 
 def plot_results(results, out_path=None):
-    evals = [0.1, 0.3, 0.5]
+    evals = [0.4, 0.6, 0.8]
     methods = ['DAC', 'DAMC']
 
     fig, axes = plt.subplots(3, 2, figsize=(12, 12))
@@ -138,7 +138,7 @@ def plot_results(results, out_path=None):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--dir', default='exp_results/Labsensor2', help='Directory with Labsensor CSV results')
+    parser.add_argument('--dir', default='exp_results/Labsensor_468', help='Directory with Labsensor CSV results')
     parser.add_argument('--out', default='plots/labsensor_comparison.png', help='Output path for combined figure')
     parser.add_argument('--aggregate', default='plots/labsensor_aggregated.csv', help='Path to save aggregated CSV of results')
     args = parser.parse_args()
