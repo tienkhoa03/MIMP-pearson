@@ -32,8 +32,8 @@ def read_metrics_from_file(path: str, reducer: Callable = None) -> Tuple[float, 
         reducer = pd.Series.mean
     if 'mape' in df.columns:
         mre = reducer(df['mape']) * 100.0
-    if 'tot_time' in df.columns:
-        t = reducer(df['tot_time'])
+    if 'opt_time' in df.columns:
+        t = reducer(df['opt_time'])
     return mre, t
 
 
