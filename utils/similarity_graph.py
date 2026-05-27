@@ -157,3 +157,46 @@ def get_similarity_graph(
         layout=layout,
     )
     return edge_index.to(original_device), pearson_matrix
+
+
+def compute_feature_pearson(X):
+    """
+    Pearson between feature columns — each column is one feature's time series.
+    X: (num_nodes, num_features) → returns (num_features, num_features)
+    """
+    X = X.contiguous()
+    X_T = X.t()                                      # (F, N)
+    mean = X_T.mean(dim=1, keepdim=True)
+    std = X_T.std(dim=1, keepdim=True)
+    std = torch.where(std == 0, torch.ones_like(std), std)
+    X_norm = (X_T - mean) / std
+    return (X_norm @ X_norm.t()) / X_T.shape[1]     # (F, F)
+
+
+def get_feature_pearson_graph(X, k, delta):
+    """
+    Build graph using feature-correlation filtered KNN.
+
+    1. Compute (F x F) Pearson between feature time series.
+    2. Find features involved in at least one pair with |pearson| >= delta.
+    3. Run KNN using only those correlated features as the embedding space.
+
+    Returns (edge_index, feature_pearson_matrix).
+    edge_index has shape (2, 0) when no feature pair passes the threshold.
+    """
+    device = X.device
+    X_cpu = X.detach().cpu()
+
+    pearson = compute_feature_pearson(X_cpu)          # (F, F)
+    feat_mask = pearson.abs() >= delta
+    feat_mask.fill_diagonal_(False)
+
+    active = feat_mask.any(dim=1)                     # (F,) bool
+    if not active.any():
+        return torch.empty((2, 0), dtype=torch.long, device=device), pearson
+
+    X_active = X_cpu[:, active]                       # (N, active_F)
+
+    from torch_geometric.nn import knn_graph as _knn
+    edge_index = _knn(X_active, k, batch=None, loop=False, cosine=False)
+    return edge_index.to(device), pearson
