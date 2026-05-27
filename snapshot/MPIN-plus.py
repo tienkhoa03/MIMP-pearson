@@ -39,7 +39,7 @@ from pypots.utils.metrics import cal_mae, cal_mse, cal_mre
 
 from sklearn.preprocessing import StandardScaler
 from scipy.stats import pearsonr
-from utils.similarity_graph import get_similarity_graph
+from utils.similarity_graph import get_similarity_graph, get_feature_pearson_graph
 
 
 
@@ -261,46 +261,29 @@ def window_imputation(
     # X_knn = X * X_mask
     X_knn = copy.deepcopy(X_cpu)
 
-    # Build graph with Pearson filtering if enabled
+    # Build graph
     if args.use_pearson == "true":
-        print("Using Pearson-filtered graph construction...")
+        print("Using feature-Pearson filtered graph construction...")
         try:
-            edge_index = get_similarity_graph_snapshot(
-                X_knn, k=args.k, delta=args.delta, window_length=args.window
-            )
+            edge_index, feat_pearson = get_feature_pearson_graph(X_knn, k=args.k, delta=args.delta)
+            print(f"  Feature Pearson matrix:\n{feat_pearson.numpy().round(3)}")
             if edge_index.numel() == 0:
-                print("Warning: No edges after Pearson filter; using standard KNN.")
+                if args.fallback_knn == "true":
+                    print(f"  No correlated feature pairs at delta={args.delta}; falling back to KNN.")
+                    edge_index = knn_graph(X_knn, args.k, batch=None, loop=False, cosine=False).to(device)
+                else:
+                    print(f"  No correlated feature pairs at delta={args.delta}; proceeding with empty graph (fallback disabled).")
+            else:
+                print(f"  Graph built on correlated features: {edge_index.shape[1]} edges.")
+        except Exception as exc:
+            if args.fallback_knn == "true":
+                print(f"  Feature Pearson graph failed ({exc}); falling back to KNN.")
                 edge_index = knn_graph(X_knn, args.k, batch=None, loop=False, cosine=False).to(device)
-        except ValueError as exc:
-            print(f"Pearson graph fallback to KNN: {exc}")
-            edge_index = knn_graph(X_knn, args.k, batch=None, loop=False, cosine=False).to(device)
+            else:
+                raise
     else:
         print("Using standard KNN graph construction...")
-        print("  X_knn shape:", X_knn.shape, "k:", args.k)
-        try:
-            edge_index = knn_graph(X_knn, args.k, batch=None, loop=False, cosine=False).to(device)
-        except Exception as exc:
-            print("knn_graph raised an exception or blocked:", exc)
-            try:
-                from sklearn.neighbors import NearestNeighbors
-            except Exception as e:
-                print("sklearn not available for fallback KNN:", e)
-                raise
-
-            print("Falling back to sklearn NearestNeighbors (may be faster/more interruptible)...")
-            X_np = X_knn.cpu().numpy()
-            n_neighbors = min(args.k, max(1, X_np.shape[0] - 1))
-            nbrs = NearestNeighbors(n_neighbors=n_neighbors, algorithm="auto", n_jobs=1).fit(X_np)
-            distances, indices = nbrs.kneighbors(X_np)
-
-            import numpy as _np
-            src = _np.repeat(_np.arange(X_np.shape[0]), indices.shape[1])
-            dst = indices.reshape(-1)
-            mask = src != dst
-            src = src[mask]
-            dst = dst[mask]
-            import torch as _torch
-            edge_index = _torch.LongTensor(_np.vstack([src, dst])).to(device)
+        edge_index = knn_graph(X_knn, args.k, batch=None, loop=False, cosine=False).to(device)
 
     for pre_epoch in range(epochs):
 
@@ -479,6 +462,7 @@ parser.add_argument("--dynamic", type=str, default="false")
 parser.add_argument("--dataset", type=str, default="ICU")
 parser.add_argument("--delta", type=float, default=0.3, help="Pearson correlation threshold for graph filtering (0-1)")
 parser.add_argument("--use_pearson", type=str, default="false", help="Use Pearson-filtered graph construction")
+parser.add_argument("--fallback_knn", type=str, default="true", help="Fall back to standard KNN when Pearson yields no edges (true/false)")
 
 
 args = parser.parse_args()
