@@ -171,3 +171,153 @@ min MSE error: epoch, MSE, time, MAE 0 1.374577 0.675514 0.63612
 ready to write data!
 done!
 finishing time: 2026-06-06 16:14:37.667016
+starting time: 2026-06-06 20:53:49.473808
+device: cuda
+dataset:Labsensor
+Applying stream subsample: keeping 34885 / 3488540 rows
+mean_X 67.9756440798365
+std_X 90.30493032991815
+base Labsensor data shape: (34885, 3) (34885, 3)
+which time window:0
+window_X: (34885, 3) (34885, 3)
+rows, cols: 54249 54249
+initial X nan: 0
+initial eval_X nan: 0
+in_channels: 3
+[MatrixFactorization] Iter 10: observed MAE=0.144074 rank=2
+[MatrixFactorization] Iter 20: observed MAE=0.145989 rank=2
+[MatrixFactorization] Iter 30: observed MAE=0.243420 rank=2
+[MatrixFactorization] Iter 40: observed MAE=0.171710 rank=2
+[MatrixFactorization] Iter 50: observed MAE=0.145006 rank=2
+trans_X shape (34885, 3)
+trans_eval_X shape (34885, 3)
+nan of X_imputed: 0
+nan of eval_X: 0
+valid impute value samples: [ 0.92522674 -0.60941325 -0.33406625 ... -0.59044587 -0.31912107
+  0.84987412]
+valid true value samples: [-0.31466326 -0.51044659 -0.25539629 ... -0.55049092 -0.31587914
+  0.32716216]
+valid impute error MAE: 0.5132788667403019
+valid impute error MSE: 1.289435861571059
+valid impute error MRE: 0.7895469543648099
+valid min impute error MAE: 0.513279
+valid min impute error MSE: 1.289436
+valid min impute error MRE: 0.789547
+elapsed time: 0.49502736666666664
+min MAE error: epoch, MAE, time, MSE 0 0.513279 0.495027 1.289436
+min MSE error: epoch, MSE, time, MAE 0 1.289436 0.495027 0.513279
+which time window:0
+window_X: (34885, 3) (34885, 3)
+rows, cols: 27125 27125
+initial X nan: 0
+initial eval_X nan: 0
+in_channels: 3
+[MatrixFactorization] Iter 10: observed MAE=0.268405 rank=2
+[MatrixFactorization] Iter 20: observed MAE=0.263308 rank=2
+[MatrixFactorization] Iter 30: observed MAE=0.260558 rank=2
+[MatrixFactorization] Iter 40: observed MAE=0.261703 rank=2
+[MatrixFactorization] Iter 50: observed MAE=0.258531 rank=2
+trans_X shape (34885, 3)
+trans_eval_X shape (34885, 3)
+nan of X_imputed: 0
+nan of eval_X: 0
+valid impute value samples: [-0.24906261  0.65883816 -0.66561845 ...  0.73152811 -0.52482616
+ -0.32193898]
+valid true value samples: [-0.20726603  4.54487207 -0.53573203 ... -0.23316162 -0.55428916
+ -0.31776055]
+valid impute error MAE: 0.481299464632015
+valid impute error MSE: 1.4012193883288373
+valid impute error MRE: 0.720657888733438
+valid min impute error MAE: 0.481299
+valid min impute error MSE: 1.401219
+valid min impute error MRE: 0.720658
+elapsed time: 0.5693958166666667
+min MAE error: epoch, MAE, time, MSE 0 0.481299 0.569396 1.401219
+min MSE error: epoch, MSE, time, MAE 0 1.401219 0.569396 0.481299
+which time window:0
+window_X: (34885, 3) (34885, 3)
+rows, cols: 13563 13563
+initial X nan: 0
+initial eval_X nan: 0
+in_channels: 3
+[MatrixFactorization] Iter 10: observed MAE=0.286861 rank=2
+[MatrixFactorization] Iter 20: observed MAE=0.283385 rank=2
+[MatrixFactorization] Iter 30: observed MAE=0.281562 rank=2
+[MatrixFactorization] Iter 40: observed MAE=0.281353 rank=2
+[MatrixFactorization] Iter 50: observed MAE=0.281000 rank=2
+trans_X shape (34885, 3)
+trans_eval_X shape (34885, 3)
+nan of X_imputed: 0
+nan of eval_X: 0
+valid impute value samples: [-0.23879769  0.59094212 -0.36810226 ... -0.29000543  0.35031735
+  0.60926809]
+valid true value samples: [-0.3268121   0.59204249 -0.53735985 ... -0.3005101   1.08105234
+  0.32716216]
+valid impute error MAE: 0.4367934284817342
+valid impute error MSE: 1.3898074188158445
+valid impute error MRE: 0.6488048806522078
+valid min impute error MAE: 0.436793
+valid min impute error MSE: 1.389807
+valid min impute error MRE: 0.648805
+elapsed time: 0.6360814333333333
+min MAE error: epoch, MAE, time, MSE 0 0.436793 0.636081 1.389807
+min MSE error: epoch, MSE, time, MAE 0 1.389807 0.636081 0.436793
+which time window:0
+window_X: (34885, 3) (34885, 3)
+rows, cols: 6782 6782
+initial X nan: 0
+initial eval_X nan: 0
+in_channels: 3
+[MatrixFactorization] Iter 10: observed MAE=0.287068 rank=2
+[MatrixFactorization] Iter 20: observed MAE=0.286678 rank=2
+[MatrixFactorization] Iter 30: observed MAE=0.284964 rank=2
+[MatrixFactorization] Iter 40: observed MAE=0.284333 rank=2
+[MatrixFactorization] Iter 50: observed MAE=0.283247 rank=2
+trans_X shape (34885, 3)
+trans_eval_X shape (34885, 3)
+nan of X_imputed: 0
+nan of eval_X: 0
+valid impute value samples: [-0.17980676  0.47926641 -0.41185105 ...  0.61119769 -0.24864147
+  0.48808518]
+valid true value samples: [-0.30761935  0.59204249 -0.5217328  ... -0.16184769 -0.59650391
+ -0.74764073]
+valid impute error MAE: 0.44066159432856683
+valid impute error MSE: 1.5039474460521343
+valid impute error MRE: 0.6615924719245099
+valid min impute error MAE: 0.440662
+valid min impute error MSE: 1.503947
+valid min impute error MRE: 0.661592
+elapsed time: 0.6411680166666667
+min MAE error: epoch, MAE, time, MSE 0 0.440662 0.641168 1.503947
+min MSE error: epoch, MSE, time, MAE 0 1.503947 0.641168 0.440662
+which time window:0
+window_X: (34885, 3) (34885, 3)
+rows, cols: 3391 3391
+initial X nan: 0
+initial eval_X nan: 0
+in_channels: 3
+[MatrixFactorization] Iter 10: observed MAE=0.286738 rank=2
+[MatrixFactorization] Iter 20: observed MAE=0.285720 rank=2
+[MatrixFactorization] Iter 30: observed MAE=0.285256 rank=2
+[MatrixFactorization] Iter 40: observed MAE=0.284891 rank=2
+[MatrixFactorization] Iter 50: observed MAE=0.284295 rank=2
+trans_X shape (34885, 3)
+trans_eval_X shape (34885, 3)
+nan of X_imputed: 0
+nan of eval_X: 0
+valid impute value samples: [-0.3775729   0.54018467 -0.38086205 ... -0.38667871  0.57014005
+ -0.21513728]
+valid true value samples: [-0.51164033 -0.1924108  -0.51315962 ... -0.56893952 -0.23316162
+ -0.28042814]
+valid impute error MAE: 0.4437673877856308
+valid impute error MSE: 1.1171171639275785
+valid impute error MRE: 0.6628712938047951
+valid min impute error MAE: 0.443767
+valid min impute error MSE: 1.117117
+valid min impute error MRE: 0.662871
+elapsed time: 0.6559451000000001
+min MAE error: epoch, MAE, time, MSE 0 0.443767 0.655945 1.117117
+min MSE error: epoch, MSE, time, MAE 0 1.117117 0.655945 0.443767
+ready to write data!
+done!
+finishing time: 2026-06-06 20:57:00.107883
