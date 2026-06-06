@@ -1,6 +1,10 @@
 # Script to run experiments with different Pearson delta thresholds
 # Usage: .\run_pearson_experiments.ps1
 
+# Run from the snapshot root (one level up from this scripts/ folder) so that
+# MPIN-plus.py and ./exp_results/ resolve correctly.
+Set-Location (Split-Path -Parent $PSScriptRoot)
+
 Write-Host "Starting Pearson delta experiments..." -ForegroundColor Green
 Write-Host "Dataset: Wifi, k=10, epochs=200, iterations=5" -ForegroundColor Cyan
 Write-Host ""

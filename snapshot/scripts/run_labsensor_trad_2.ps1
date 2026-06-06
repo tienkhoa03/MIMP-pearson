@@ -9,9 +9,9 @@
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
-Push-Location $PSScriptRoot
+Push-Location (Split-Path -Parent $PSScriptRoot)
 try {
-    $pythonExe = Join-Path $PSScriptRoot "..\venv311\Scripts\python.exe"
+    $pythonExe = Join-Path $PSScriptRoot "..\..\venv311\Scripts\python.exe"
     if (-Not (Test-Path $pythonExe)) {
         $pythonExe = "python"
     }
@@ -31,31 +31,32 @@ try {
     $k          = 10
     $prefix     = "no_pearson"
 
-    $tradMethods = @("mean", "KNN", "MICE", "MF-mf")
-    $nnMethods   = @("saits")
+    $tradMethods = @("MF-mf")
+    $nnMethods   = @("brits", "saits")
 
     $totalExp    = ($tradMethods.Count + 1 + $nnMethods.Count) * $evalRatios.Count
     $current     = 0
     $globalStart = Get-Date
 
     # ----------------------------------------
-    # nn.py  :  BRITS, SAITS
+    # trad.py  :  mean, KNN, MICE, MF
     # ----------------------------------------
     Write-Host ""
-    Write-Host "--- nn.py : BRITS / SAITS ---" -ForegroundColor Magenta
+    Write-Host "--- trad.py : mean / KNN / MICE / MF ---" -ForegroundColor Magenta
 
-    foreach ($nnMethod in $nnMethods) {
+    foreach ($method in $tradMethods) {
         foreach ($eval in $evalRatios) {
             $current++
             $startTime = Get-Date
             Write-Host ""
-            Write-Host "[$current/$totalExp] method=$nnMethod  eval=$eval" -ForegroundColor Yellow
+            Write-Host "[$current/$totalExp] method=$method  eval=$eval" -ForegroundColor Yellow
 
-            & $pythonExe nn.py `
+            & $pythonExe trad.py `
                 --dataset    $dataset `
                 --window     $window `
+                --k          $k `
                 --prefix     $prefix `
-                --method     $nnMethod `
+                --method     $method `
                 --eval_ratio $eval `
                 --stream     $stream
 
@@ -63,6 +64,7 @@ try {
             Write-Host "  done in $($dur.TotalMinutes.ToString('F2')) min" -ForegroundColor Green
         }
     }
+
 
     $totalDur = (Get-Date) - $globalStart
     Write-Host ""

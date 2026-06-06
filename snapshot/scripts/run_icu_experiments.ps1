@@ -1,25 +1,26 @@
-# Snapshot batch experiments for WiFi KDM
+# Snapshot batch experiments for ICU
 # Cases:
 # - base: SAGE++DAC, SAGE++DAMC
 # - eval_ratio: 0.1, 0.3, 0.5
 # - no Pearson
 # - Pearson delta: 0.1..0.9
-# Fixed window length: 6 (minutes)
-# Usage: .\run_kdm_experiments.ps1
+# Fixed window length: 4
+# Usage: .\run_icu_experiments.ps1
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
+$env:PYTORCH_CUDA_ALLOC_CONF = "expandable_segments:True,max_split_size_mb:128"
 
-Push-Location $PSScriptRoot
+Push-Location (Split-Path -Parent $PSScriptRoot)
 try {
     Write-Host "========================================" -ForegroundColor Green
-    Write-Host "Snapshot KDM Experiments" -ForegroundColor Green
+    Write-Host "Snapshot ICU Experiments" -ForegroundColor Green
     Write-Host "========================================" -ForegroundColor Green
 
-    $dataset = "KDM"
-    $window = 6
+    $dataset = "ICU"
+    $window = 4
     $bases = @("SAGE++DAC", "SAGE++DAMC")
-    $evalRatios = @(0.1, 0.3, 0.5)
+    $evalRatios = @(0.5)
     $deltas = @(0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9)
 
     $epochs = 200

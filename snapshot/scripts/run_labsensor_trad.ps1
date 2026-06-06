@@ -9,9 +9,9 @@
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
-Push-Location $PSScriptRoot
+Push-Location (Split-Path -Parent $PSScriptRoot)
 try {
-    $pythonExe = Join-Path $PSScriptRoot "..\venv311\Scripts\python.exe"
+    $pythonExe = Join-Path $PSScriptRoot "..\..\venv311\Scripts\python.exe"
     if (-Not (Test-Path $pythonExe)) {
         $pythonExe = "python"
     }
@@ -31,7 +31,7 @@ try {
     $k          = 10
     $prefix     = "no_pearson"
 
-    $tradMethods = @( "KNN")
+    $tradMethods = @("mean", "KNN", "MICE", "MF-mf")
     $nnMethods   = @("brits", "saits")
 
     $totalExp    = ($tradMethods.Count + 1 + $nnMethods.Count) * $evalRatios.Count
@@ -65,6 +65,55 @@ try {
         }
     }
 
+    # ----------------------------------------
+    # FP.py  :  feature propagation
+    # ----------------------------------------
+    Write-Host ""
+    Write-Host "--- FP.py : fp ---" -ForegroundColor Magenta
+
+    foreach ($eval in $evalRatios) {
+        $current++
+        $startTime = Get-Date
+        Write-Host ""
+        Write-Host "[$current/$totalExp] method=fp  eval=$eval" -ForegroundColor Yellow
+
+        & $pythonExe FP.py `
+            --dataset    $dataset `
+            --window     $window `
+            --k          $k `
+            --prefix     $prefix `
+            --eval_ratio $eval `
+            --stream     $stream
+
+        $dur = (Get-Date) - $startTime
+        Write-Host "  done in $($dur.TotalMinutes.ToString('F2')) min" -ForegroundColor Green
+    }
+
+    # ----------------------------------------
+    # nn.py  :  BRITS, SAITS
+    # ----------------------------------------
+    Write-Host ""
+    Write-Host "--- nn.py : BRITS / SAITS ---" -ForegroundColor Magenta
+
+    foreach ($nnMethod in $nnMethods) {
+        foreach ($eval in $evalRatios) {
+            $current++
+            $startTime = Get-Date
+            Write-Host ""
+            Write-Host "[$current/$totalExp] method=$nnMethod  eval=$eval" -ForegroundColor Yellow
+
+            & $pythonExe nn.py `
+                --dataset    $dataset `
+                --window     $window `
+                --prefix     $prefix `
+                --method     $nnMethod `
+                --eval_ratio $eval `
+                --stream     $stream
+
+            $dur = (Get-Date) - $startTime
+            Write-Host "  done in $($dur.TotalMinutes.ToString('F2')) min" -ForegroundColor Green
+        }
+    }
 
     $totalDur = (Get-Date) - $globalStart
     Write-Host ""

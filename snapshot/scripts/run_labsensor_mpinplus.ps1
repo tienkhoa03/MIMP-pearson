@@ -6,9 +6,9 @@
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
-Push-Location $PSScriptRoot
+Push-Location (Split-Path -Parent $PSScriptRoot)
 try {
-    $pythonExe = Join-Path $PSScriptRoot "..\venv311\Scripts\python.exe"
+    $pythonExe = Join-Path $PSScriptRoot "..\..\venv311\Scripts\python.exe"
     if (-Not (Test-Path $pythonExe)) {
         $pythonExe = "python"
     }

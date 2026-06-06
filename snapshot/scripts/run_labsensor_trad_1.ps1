@@ -9,9 +9,9 @@
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
-Push-Location $PSScriptRoot
+Push-Location (Split-Path -Parent $PSScriptRoot)
 try {
-    $pythonExe = Join-Path $PSScriptRoot "..\venv311\Scripts\python.exe"
+    $pythonExe = Join-Path $PSScriptRoot "..\..\venv311\Scripts\python.exe"
     if (-Not (Test-Path $pythonExe)) {
         $pythonExe = "python"
     }
@@ -31,38 +31,40 @@ try {
     $k          = 10
     $prefix     = "no_pearson"
 
-    $tradMethods = @("MF-mf")
+    $tradMethods = @( "KNN")
     $nnMethods   = @("brits", "saits")
 
     $totalExp    = ($tradMethods.Count + 1 + $nnMethods.Count) * $evalRatios.Count
     $current     = 0
     $globalStart = Get-Date
 
- 
-
     # ----------------------------------------
-    # FP.py  :  feature propagation
+    # trad.py  :  mean, KNN, MICE, MF
     # ----------------------------------------
     Write-Host ""
-    Write-Host "--- FP.py : fp ---" -ForegroundColor Magenta
+    Write-Host "--- trad.py : mean / KNN / MICE / MF ---" -ForegroundColor Magenta
 
-    foreach ($eval in $evalRatios) {
-        $current++
-        $startTime = Get-Date
-        Write-Host ""
-        Write-Host "[$current/$totalExp] method=fp  eval=$eval" -ForegroundColor Yellow
+    foreach ($method in $tradMethods) {
+        foreach ($eval in $evalRatios) {
+            $current++
+            $startTime = Get-Date
+            Write-Host ""
+            Write-Host "[$current/$totalExp] method=$method  eval=$eval" -ForegroundColor Yellow
 
-        & $pythonExe FP.py `
-            --dataset    $dataset `
-            --window     $window `
-            --k          $k `
-            --prefix     $prefix `
-            --eval_ratio $eval `
-            --stream     $stream
+            & $pythonExe trad.py `
+                --dataset    $dataset `
+                --window     $window `
+                --k          $k `
+                --prefix     $prefix `
+                --method     $method `
+                --eval_ratio $eval `
+                --stream     $stream
 
-        $dur = (Get-Date) - $startTime
-        Write-Host "  done in $($dur.TotalMinutes.ToString('F2')) min" -ForegroundColor Green
+            $dur = (Get-Date) - $startTime
+            Write-Host "  done in $($dur.TotalMinutes.ToString('F2')) min" -ForegroundColor Green
+        }
     }
+
 
     $totalDur = (Get-Date) - $globalStart
     Write-Host ""

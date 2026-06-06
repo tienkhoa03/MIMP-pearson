@@ -10,7 +10,7 @@
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
-Push-Location $PSScriptRoot
+Push-Location (Split-Path -Parent $PSScriptRoot)
 try {
     Write-Host "========================================" -ForegroundColor Green
     Write-Host "Snapshot Airquality Experiments" -ForegroundColor Green
