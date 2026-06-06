@@ -159,58 +159,44 @@ def get_similarity_graph(
     return edge_index.to(original_device), pearson_matrix
 
 
-def compute_node_pearson(X):
+def compute_feature_pearson(X):
     """
-    Pearson between every pair of node feature vectors.
-    X: (N, F) → returns (N, N)
-    Each node is normalized across its F features before correlation.
+    Pearson between feature columns — each column is one feature's time series.
+    X: (num_nodes, num_features) → returns (num_features, num_features)
     """
     X = X.contiguous()
-    mean = X.mean(dim=1, keepdim=True)               # (N, 1)
-    std = X.std(dim=1, keepdim=True)                 # (N, 1)
+    X_T = X.t()                                      # (F, N)
+    mean = X_T.mean(dim=1, keepdim=True)
+    std = X_T.std(dim=1, keepdim=True)
     std = torch.where(std == 0, torch.ones_like(std), std)
-    X_norm = (X - mean) / std                        # (N, F)
-    return (X_norm @ X_norm.t()) / X.shape[1]        # (N, N)
+    X_norm = (X_T - mean) / std
+    return (X_norm @ X_norm.t()) / X_T.shape[1]     # (F, F)
 
 
-def get_sensor_pearson_graph(X, k, delta):
+def get_feature_pearson_graph(X, k, delta):
     """
-    Per-node Pearson-filtered KNN graph between sensors (nodes).
+    Build graph using feature-correlation filtered KNN.
 
-    For each node i:
-      1. Candidate set = { j : |pearson(i, j)| >= delta, j != i }
-      2. If candidates empty → per-node fallback: use all other nodes (Euclidean KNN)
-      3. Connect to k nearest in the candidate set by Euclidean distance
+    1. Compute (F x F) Pearson between feature time series.
+    2. Find features involved in at least one pair with |pearson| >= delta.
+    3. Run KNN using only those correlated features as the embedding space.
 
-    Returns (edge_index, pearson_matrix).
+    Returns (edge_index, feature_pearson_matrix).
+    edge_index has shape (2, 0) when no feature pair passes the threshold.
     """
     device = X.device
     X_cpu = X.detach().cpu()
-    N = X_cpu.shape[0]
 
-    pearson = compute_node_pearson(X_cpu)            # (N, N)
-    pearson_mask = pearson.abs() >= delta
-    pearson_mask.fill_diagonal_(False)
+    pearson = compute_feature_pearson(X_cpu)          # (F, F)
+    feat_mask = pearson.abs() >= delta
+    feat_mask.fill_diagonal_(False)
 
-    dist = torch.cdist(X_cpu, X_cpu, p=2)           # (N, N)
-    dist.fill_diagonal_(float('inf'))
-
-    # Non-candidate nodes get inf so they are never chosen by topk
-    masked_dist = dist.clone()
-    masked_dist[~pearson_mask] = float('inf')
-
-    # Per-node fallback: nodes with no Pearson candidates → use full Euclidean dist
-    no_candidates = ~pearson_mask.any(dim=1)         # (N,) bool
-    masked_dist[no_candidates] = dist[no_candidates]
-
-    k_eff = min(k, N - 1)
-    if k_eff == 0:
+    active = feat_mask.any(dim=1)                     # (F,) bool
+    if not active.any():
         return torch.empty((2, 0), dtype=torch.long, device=device), pearson
 
-    topk_vals, topk_idx = torch.topk(masked_dist, k_eff, dim=1, largest=False)
+    X_active = X_cpu[:, active]                       # (N, active_F)
 
-    valid = topk_vals < float('inf')                 # (N, k_eff)
-    src = torch.arange(N).unsqueeze(1).expand(-1, k_eff)
-    edge_index = torch.stack([src[valid], topk_idx[valid]])
-
+    from torch_geometric.nn import knn_graph as _knn
+    edge_index = _knn(X_active, k, batch=None, loop=False, cosine=False)
     return edge_index.to(device), pearson

@@ -39,7 +39,7 @@ from pypots.utils.metrics import cal_mae, cal_mse, cal_mre
 
 from sklearn.preprocessing import StandardScaler
 from scipy.stats import pearsonr
-from utils.similarity_graph import get_similarity_graph, get_sensor_pearson_graph
+from utils.similarity_graph import get_similarity_graph, get_feature_pearson_graph
 
 
 
@@ -263,13 +263,24 @@ def window_imputation(
 
     # Build graph
     if args.use_pearson == "true":
-        print("Using sensor-Pearson filtered graph construction...")
-        print(f"  delta={args.delta}, k={args.k}, nodes={X_knn.shape[0]}")
-        edge_index, node_pearson = get_sensor_pearson_graph(X_knn, k=args.k, delta=args.delta)
-        n_fallback = int((node_pearson.abs() < args.delta).all(dim=1).sum().item())
-        print(f"  Nodes using per-node Pearson candidates: {X_knn.shape[0] - n_fallback}")
-        print(f"  Nodes falling back to Euclidean KNN:     {n_fallback}")
-        print(f"  Total edges: {edge_index.shape[1]}")
+        print("Using feature-Pearson filtered graph construction...")
+        try:
+            edge_index, feat_pearson = get_feature_pearson_graph(X_knn, k=args.k, delta=args.delta)
+            print(f"  Feature Pearson matrix:\n{feat_pearson.numpy().round(3)}")
+            if edge_index.numel() == 0:
+                if args.fallback_knn == "true":
+                    print(f"  No correlated feature pairs at delta={args.delta}; falling back to KNN.")
+                    edge_index = knn_graph(X_knn, args.k, batch=None, loop=False, cosine=False).to(device)
+                else:
+                    print(f"  No correlated feature pairs at delta={args.delta}; proceeding with empty graph (fallback disabled).")
+            else:
+                print(f"  Graph built on correlated features: {edge_index.shape[1]} edges.")
+        except Exception as exc:
+            if args.fallback_knn == "true":
+                print(f"  Feature Pearson graph failed ({exc}); falling back to KNN.")
+                edge_index = knn_graph(X_knn, args.k, batch=None, loop=False, cosine=False).to(device)
+            else:
+                raise
     else:
         print("Using standard KNN graph construction...")
         edge_index = knn_graph(X_knn, args.k, batch=None, loop=False, cosine=False).to(device)
@@ -451,6 +462,7 @@ parser.add_argument("--dynamic", type=str, default="false")
 parser.add_argument("--dataset", type=str, default="ICU")
 parser.add_argument("--delta", type=float, default=0.3, help="Pearson correlation threshold for graph filtering (0-1)")
 parser.add_argument("--use_pearson", type=str, default="false", help="Use Pearson-filtered graph construction")
+parser.add_argument("--fallback_knn", type=str, default="true", help="Fall back to standard KNN when Pearson yields no edges (true/false)")
 
 
 args = parser.parse_args()
