@@ -20,3 +20,108 @@ which time window:0
 window_X: (34885, 3) (34885, 3)
 rows, cols: 54249 54249
 in_channels: 3
+starting time: 2026-06-06 16:05:24.070559
+device: cuda
+dataset:Labsensor
+Applying stream subsample: keeping 34885 / 3488540 rows
+mean_X 67.9756440798365
+std_X 90.30493032991815
+base Labsensor data shape: (34885, 3) (34885, 3)
+which time window:0
+window_X: (34885, 3) (34885, 3)
+rows, cols: 54249 54249
+in_channels: 3
+222 Data(x=[34885, 3], edge_index=[2, 348850], num_of_iteration=40)
+trans_X shape torch.Size([34885, 3])
+trans_eval_X shape torch.Size([34885, 3])
+valid impute value samples: tensor([0., 0., 0.,  ..., 0., 0., 0.], device='cuda:0')
+valid true value samples: tensor([-0.3147, -0.5104, -0.2554,  ..., -0.5505, -0.3159,  0.3272],
+       device='cuda:0')
+valid impute error MAE: 0.6483198404312134
+valid impute error MSE: 1.4852982759475708
+valid impute error MRE: 0.9972726702690125
+valid min impute error MAE: 0.64832
+valid min impute error MSE: 1.485298
+valid min impute error MRE: 0.997273
+elapsed time: 0.036065983333333336
+min MAE error: epoch, MAE, time, MSE 0 0.64832 0.036066 1.485298
+min MSE error: epoch, MSE, time, MAE 0 1.485298 0.036066 0.64832
+which time window:0
+window_X: (34885, 3) (34885, 3)
+rows, cols: 27125 27125
+in_channels: 3
+222 Data(x=[34885, 3], edge_index=[2, 348850], num_of_iteration=40)
+trans_X shape torch.Size([34885, 3])
+trans_eval_X shape torch.Size([34885, 3])
+valid impute value samples: tensor([0., 0., 0.,  ..., 0., 0., 0.], device='cuda:0')
+valid true value samples: tensor([-0.2073,  4.5449, -0.5357,  ..., -0.2332, -0.5543, -0.3178],
+       device='cuda:0')
+valid impute error MAE: 0.6669443845748901
+valid impute error MSE: 1.7101048231124878
+valid impute error MRE: 0.9986271858215332
+valid min impute error MAE: 0.666944
+valid min impute error MSE: 1.710105
+valid min impute error MRE: 0.998627
+elapsed time: 0.04332158333333334
+min MAE error: epoch, MAE, time, MSE 0 0.666944 0.043322 1.710105
+min MSE error: epoch, MSE, time, MAE 0 1.710105 0.043322 0.666944
+which time window:0
+window_X: (34885, 3) (34885, 3)
+rows, cols: 13563 13563
+in_channels: 3
+222 Data(x=[34885, 3], edge_index=[2, 348850], num_of_iteration=40)
+trans_X shape torch.Size([34885, 3])
+trans_eval_X shape torch.Size([34885, 3])
+valid impute value samples: tensor([0., 0., 0.,  ..., 0., 0., 0.], device='cuda:0')
+valid true value samples: tensor([-0.3268,  0.5920, -0.5374,  ..., -0.3005,  1.0811,  0.3272],
+       device='cuda:0')
+valid impute error MAE: 0.6722217202186584
+valid impute error MSE: 1.7039477825164795
+valid impute error MRE: 0.998505711555481
+valid min impute error MAE: 0.672222
+valid min impute error MSE: 1.703948
+valid min impute error MRE: 0.998506
+elapsed time: 0.04595401666666667
+min MAE error: epoch, MAE, time, MSE 0 0.672222 0.045954 1.703948
+min MSE error: epoch, MSE, time, MAE 0 1.703948 0.045954 0.672222
+which time window:0
+window_X: (34885, 3) (34885, 3)
+rows, cols: 6782 6782
+in_channels: 3
+222 Data(x=[34885, 3], edge_index=[2, 348850], num_of_iteration=40)
+trans_X shape torch.Size([34885, 3])
+trans_eval_X shape torch.Size([34885, 3])
+valid impute value samples: tensor([0., 0., 0.,  ..., 0., 0., 0.], device='cuda:0')
+valid true value samples: tensor([-0.3076,  0.5920, -0.5217,  ..., -0.1618, -0.5965, -0.7476],
+       device='cuda:0')
+valid impute error MAE: 0.6657522320747375
+valid impute error MSE: 1.8340305089950562
+valid impute error MRE: 0.9995349645614624
+valid min impute error MAE: 0.665752
+valid min impute error MSE: 1.834031
+valid min impute error MRE: 0.999535
+elapsed time: 0.052655600000000004
+min MAE error: epoch, MAE, time, MSE 0 0.665752 0.052656 1.834031
+min MSE error: epoch, MSE, time, MAE 0 1.834031 0.052656 0.665752
+which time window:0
+window_X: (34885, 3) (34885, 3)
+rows, cols: 3391 3391
+in_channels: 3
+222 Data(x=[34885, 3], edge_index=[2, 348850], num_of_iteration=40)
+trans_X shape torch.Size([34885, 3])
+trans_eval_X shape torch.Size([34885, 3])
+valid impute value samples: tensor([0., 0., 0.,  ..., 0., 0., 0.], device='cuda:0')
+valid true value samples: tensor([-0.5116, -0.1924, -0.5132,  ..., -0.5689, -0.2332, -0.2804],
+       device='cuda:0')
+valid impute error MAE: 0.6693241000175476
+valid impute error MSE: 1.4258215427398682
+valid impute error MRE: 0.9997934699058533
+valid min impute error MAE: 0.669324
+valid min impute error MSE: 1.425822
+valid min impute error MRE: 0.999793
+elapsed time: 0.05523073333333333
+min MAE error: epoch, MAE, time, MSE 0 0.669324 0.055231 1.425822
+min MSE error: epoch, MSE, time, MAE 0 1.425822 0.055231 0.669324
+ready to write data!
+done!
+finishing time: 2026-06-06 16:05:49.107853

@@ -1,0 +1,39 @@
+starting time: 2026-06-06 20:34:57.744872
+device: cuda
+dataset:Labsensor
+Applying stream subsample: keeping 34885 / 3488540 rows
+mean_X 67.9756440798365
+std_X 90.30493032991815
+base Labsensor data shape: (34885, 3) (34885, 3)
+which time window:0
+window_X: (34885, 3) (34885, 3)
+rows, cols: 54249 54249
+initial X nan: 0
+initial eval_X nan: 0
+in_channels: 3
+[MatrixFactorization] Iter 10: observed MAE=nan rank=40
+[MatrixFactorization] Iter 20: observed MAE=nan rank=40
+[MatrixFactorization] Iter 30: observed MAE=nan rank=40
+[MatrixFactorization] Iter 40: observed MAE=nan rank=40
+[MatrixFactorization] Iter 50: observed MAE=nan rank=40
+Warning: MatrixFactorization produced non-finite values; replacing them with column means.
+trans_X shape (34885, 3)
+trans_eval_X shape (34885, 3)
+nan of X_imputed: 0
+nan of eval_X: 0
+valid impute value samples: [-0.55751199 -0.29852448 -0.29852448 ... -0.55751199 -0.29852448
+ -0.55751199]
+valid true value samples: [-0.51044659 -0.25539629 -0.31399885 ... -0.57252072 -0.27303652
+ -0.59650391]
+valid impute error MAE: 0.3842348609631578
+valid impute error MSE: 1.18845108721105
+valid impute error MRE: 0.5878394098790878
+valid min impute error MAE: 0.384235
+valid min impute error MSE: 1.188451
+valid min impute error MRE: 0.587839
+elapsed time: 0.6664158333333333
+min MAE error: epoch, MAE, time, MSE 0 0.384235 0.666416 1.188451
+min MSE error: epoch, MSE, time, MAE 0 1.188451 0.666416 0.384235
+ready to write data!
+done!
+finishing time: 2026-06-06 20:35:48.635271

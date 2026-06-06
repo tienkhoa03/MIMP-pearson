@@ -300,6 +300,11 @@ def window_imputation(start, end, sample_ratio, initial_state_dict=None, X_last=
         elif concrete_meth == 'mf':
             MF_imputer = MatrixFactorization()
         X_imputed = MF_imputer.fit_transform(X_input)
+        X_imputed = np.asarray(X_imputed)
+        if not np.isfinite(X_imputed).all():
+            print('Warning: MatrixFactorization produced non-finite values; replacing them with column means.')
+            col_means = np.nanmean(X_input, axis=0)
+            X_imputed = np.where(np.isfinite(X_imputed), X_imputed, col_means)
 
     # elif args.method in ['mean', 'median', 'most_frequent', 'constant']:
     elif args.method in ['mean', 'median', 'most_frequent', 'constant']:

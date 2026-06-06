@@ -28,3 +28,32 @@ min MSE error: epoch, MSE, time, MAE 0 1.517695 0.006979 0.593463
 ready to write data!
 done!
 finishing time: 2026-06-06 15:55:16.019315
+starting time: 2026-06-06 16:03:50.081867
+device: cuda
+dataset:Labsensor
+Applying stream subsample: keeping 3488 / 3488540 rows
+mean_X 83.03170090396499
+std_X 130.09124113088524
+base Labsensor data shape: (3488, 3) (3488, 3)
+which time window:0
+window_X: (3488, 3) (3488, 3)
+rows, cols: 5019 5019
+in_channels: 3
+222 Data(x=[3488, 3], edge_index=[2, 34880], num_of_iteration=40)
+trans_X shape torch.Size([3488, 3])
+trans_eval_X shape torch.Size([3488, 3])
+valid impute value samples: tensor([0., 0., 0.,  ..., 0., 0., 0.], device='cuda:0')
+valid true value samples: tensor([ 3.0392, -0.4876, -0.4701,  ..., -0.3447,  1.0873, -0.4950],
+       device='cuda:0')
+valid impute error MAE: 0.603438675403595
+valid impute error MSE: 1.5232635736465454
+valid impute error MRE: 0.9748150706291199
+valid min impute error MAE: 0.603439
+valid min impute error MSE: 1.523264
+valid min impute error MRE: 0.974815
+elapsed time: 0.006201966666666667
+min MAE error: epoch, MAE, time, MSE 0 0.603439 0.006202 1.523264
+min MSE error: epoch, MSE, time, MAE 0 1.523264 0.006202 0.603439
+ready to write data!
+done!
+finishing time: 2026-06-06 16:04:01.785664

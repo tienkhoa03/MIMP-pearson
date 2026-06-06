@@ -22,7 +22,6 @@ from utils.DynamicGNN import DynamicGCN, DynamicGAT, DynamicGraphSAGE
 from argparse import ArgumentParser
 from torch_geometric.data import Data
 from utils.load_dataset import load_ICU_dataset, load_airquality_dataset, load_WiFi_dataset, load_IBRL_dataset
-from torch_geometric.transforms import FeaturePropagation
 from pypots.utils.metrics import cal_mae, cal_mse, cal_mre
 
 parser = ArgumentParser()
@@ -70,6 +69,23 @@ def build_knn_edge_index(X, k):
     row = np.repeat(np.arange(n_samples, dtype=np.int64), indices.shape[1])
     col = indices.reshape(-1)
     return torch.tensor(np.vstack([row, col]), dtype=torch.long, device=device)
+
+
+def propagate_missing_values(X, missing_mask, edge_index, num_iterations=5):
+    propagated = X.clone()
+    src, dst = edge_index
+
+    for _ in range(num_iterations):
+        neighbor_sum = torch.zeros_like(propagated)
+        neighbor_sum.index_add_(0, dst, propagated[src])
+
+        degree = torch.zeros(propagated.size(0), device=propagated.device, dtype=propagated.dtype)
+        degree.index_add_(0, dst, torch.ones(dst.size(0), device=propagated.device, dtype=propagated.dtype))
+
+        neighbor_mean = neighbor_sum / degree.clamp(min=1).unsqueeze(1)
+        propagated = torch.where(missing_mask, neighbor_mean, propagated)
+
+    return propagated
 
 
 # Redirect stdout to log and console
@@ -254,9 +270,8 @@ def window_imputation(start, end, sample_ratio, initial_state_dict=None, X_last=
 
     edge_index = build_knn_edge_index(X_imputed, args.k)
     data = Data(x=X_imputed, edge_index=edge_index, num_of_iteration=args.epochs)
-    transform = FeaturePropagation(missing_mask=(~(X_mask.bool())))
-    data = transform(data)
-    X_imputed = data.x
+    X_imputed = propagate_missing_values(X_imputed, ~(X_mask.bool()), edge_index, num_iterations=5)
+    data.x = X_imputed
     print(222, data)
 
 

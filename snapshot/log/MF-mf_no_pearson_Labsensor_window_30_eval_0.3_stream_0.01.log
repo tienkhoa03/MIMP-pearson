@@ -24,3 +24,148 @@ rows, cols: 54249 54249
 initial X nan: 0
 initial eval_X nan: 0
 in_channels: 3
+starting time: 2026-06-06 16:08:01.179442
+device: cuda
+dataset:Labsensor
+Applying stream subsample: keeping 34885 / 3488540 rows
+mean_X 67.9756440798365
+std_X 90.30493032991815
+base Labsensor data shape: (34885, 3) (34885, 3)
+which time window:0
+window_X: (34885, 3) (34885, 3)
+rows, cols: 54249 54249
+initial X nan: 0
+initial eval_X nan: 0
+in_channels: 3
+[MatrixFactorization] Iter 10: observed MAE=nan rank=40
+[MatrixFactorization] Iter 20: observed MAE=nan rank=40
+[MatrixFactorization] Iter 30: observed MAE=nan rank=40
+[MatrixFactorization] Iter 40: observed MAE=nan rank=40
+[MatrixFactorization] Iter 50: observed MAE=nan rank=40
+trans_X shape (34885, 3)
+trans_eval_X shape (34885, 3)
+nan of X_imputed: 16274
+nan of eval_X: 0
+valid impute value samples: [nan nan nan ... nan nan nan]
+valid true value samples: [-0.51044659 -0.25539629 -0.74254688 ... -0.55049092 -0.31587914
+  0.32716216]
+valid impute error MAE: nan
+valid impute error MSE: nan
+valid impute error MRE: nan
+valid min impute error MAE: nan
+valid min impute error MSE: nan
+valid min impute error MRE: nan
+elapsed time: 0.56987985
+min MAE error: epoch, MAE, time, MSE 0 nan 0.56988 nan
+min MSE error: epoch, MSE, time, MAE 0 nan 0.56988 nan
+which time window:0
+window_X: (34885, 3) (34885, 3)
+rows, cols: 37975 37975
+initial X nan: 0
+initial eval_X nan: 0
+in_channels: 3
+[MatrixFactorization] Iter 10: observed MAE=nan rank=40
+[MatrixFactorization] Iter 20: observed MAE=nan rank=40
+[MatrixFactorization] Iter 30: observed MAE=nan rank=40
+[MatrixFactorization] Iter 40: observed MAE=nan rank=40
+[MatrixFactorization] Iter 50: observed MAE=nan rank=40
+trans_X shape (34885, 3)
+trans_eval_X shape (34885, 3)
+nan of X_imputed: 11392
+nan of eval_X: 0
+valid impute value samples: [nan nan nan ... nan nan nan]
+valid true value samples: [ 4.54487207 -0.53573203 -0.31466326 ...  0.75504577 -0.28042814
+ -0.23316162]
+valid impute error MAE: nan
+valid impute error MSE: nan
+valid impute error MRE: nan
+valid min impute error MAE: nan
+valid min impute error MSE: nan
+valid min impute error MRE: nan
+elapsed time: 0.60635585
+min MAE error: epoch, MAE, time, MSE 0 nan 0.606356 nan
+min MSE error: epoch, MSE, time, MAE 0 nan 0.606356 nan
+which time window:0
+window_X: (34885, 3) (34885, 3)
+rows, cols: 26583 26583
+initial X nan: 0
+initial eval_X nan: 0
+in_channels: 3
+[MatrixFactorization] Iter 10: observed MAE=nan rank=40
+[MatrixFactorization] Iter 20: observed MAE=nan rank=40
+[MatrixFactorization] Iter 30: observed MAE=nan rank=40
+[MatrixFactorization] Iter 40: observed MAE=nan rank=40
+[MatrixFactorization] Iter 50: observed MAE=nan rank=40
+trans_X shape (34885, 3)
+trans_eval_X shape (34885, 3)
+nan of X_imputed: 7974
+nan of eval_X: 0
+valid impute value samples: [nan nan nan ... nan nan nan]
+valid true value samples: [-0.1924108  -0.27391244 -0.5652498  ... -0.74764073 -0.55613402
+ -0.55428916]
+valid impute error MAE: nan
+valid impute error MSE: nan
+valid impute error MRE: nan
+valid min impute error MAE: nan
+valid min impute error MSE: nan
+valid min impute error MRE: nan
+elapsed time: 0.6187005
+min MAE error: epoch, MAE, time, MSE 0 nan 0.6187 nan
+min MSE error: epoch, MSE, time, MAE 0 nan 0.6187 nan
+which time window:0
+window_X: (34885, 3) (34885, 3)
+rows, cols: 18609 18609
+initial X nan: 0
+initial eval_X nan: 0
+in_channels: 3
+[MatrixFactorization] Iter 10: observed MAE=nan rank=40
+[MatrixFactorization] Iter 20: observed MAE=nan rank=40
+[MatrixFactorization] Iter 30: observed MAE=nan rank=40
+[MatrixFactorization] Iter 40: observed MAE=nan rank=40
+[MatrixFactorization] Iter 50: observed MAE=nan rank=40
+trans_X shape (34885, 3)
+trans_eval_X shape (34885, 3)
+nan of X_imputed: 5582
+nan of eval_X: 0
+valid impute value samples: [nan nan nan ... nan nan nan]
+valid true value samples: [-0.20726603 -0.19300545 -0.25576282 ... -0.3005101  -0.31625565
+ -0.31776055]
+valid impute error MAE: nan
+valid impute error MSE: nan
+valid impute error MRE: nan
+valid min impute error MAE: nan
+valid min impute error MSE: nan
+valid min impute error MRE: nan
+elapsed time: 0.6406594166666667
+min MAE error: epoch, MAE, time, MSE 0 nan 0.640659 nan
+min MSE error: epoch, MSE, time, MAE 0 nan 0.640659 nan
+which time window:0
+window_X: (34885, 3) (34885, 3)
+rows, cols: 13027 13027
+initial X nan: 0
+initial eval_X nan: 0
+in_channels: 3
+[MatrixFactorization] Iter 10: observed MAE=nan rank=40
+[MatrixFactorization] Iter 20: observed MAE=nan rank=40
+[MatrixFactorization] Iter 30: observed MAE=nan rank=40
+[MatrixFactorization] Iter 40: observed MAE=nan rank=40
+[MatrixFactorization] Iter 50: observed MAE=nan rank=40
+trans_X shape (34885, 3)
+trans_eval_X shape (34885, 3)
+nan of X_imputed: 3908
+nan of eval_X: 0
+valid impute value samples: [nan nan nan ... nan nan nan]
+valid true value samples: [-0.49742405 -0.30761935 -0.08034605 ...  1.24405562  1.08105234
+  6.17490489]
+valid impute error MAE: nan
+valid impute error MSE: nan
+valid impute error MRE: nan
+valid min impute error MAE: nan
+valid min impute error MSE: nan
+valid min impute error MRE: nan
+elapsed time: 0.6516270666666667
+min MAE error: epoch, MAE, time, MSE 0 nan 0.651627 nan
+min MSE error: epoch, MSE, time, MAE 0 nan 0.651627 nan
+ready to write data!
+done!
+finishing time: 2026-06-06 16:11:17.237366
