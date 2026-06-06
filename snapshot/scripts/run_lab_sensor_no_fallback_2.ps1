@@ -28,7 +28,7 @@ try {
     $stream     = 0.01
     $base       = "SAGE++DAMC"
     $prefix     = "no_fallback"
-    $evalRatios = @(0.1)
+    $evalRatios = @(0.3)
     $deltas     = @(0.5, 0.4, 0.3, 0.2, 0.1)
 
     $totalExp    = $deltas.Count * $evalRatios.Count
