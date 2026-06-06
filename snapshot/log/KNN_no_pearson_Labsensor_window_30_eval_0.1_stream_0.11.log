@@ -1,0 +1,36 @@
+starting time: 2026-06-06 15:18:21.114926
+device: cuda
+dataset:Labsensor
+Applying stream subsample: keeping 383739 / 3488540 rows
+mean_X 137.36738520096426
+std_X 260.6095648522487
+base Labsensor data shape: (383739, 3) (383739, 3)
+which time window:0
+window_X: (383739, 3) (383739, 3)
+rows, cols: 667047 667047
+initial X nan: 0
+initial eval_X nan: 0
+in_channels: 3
+trans_X shape (383739, 3)
+trans_eval_X shape (383739, 3)
+nan of X_imputed: 0
+nan of eval_X: 0
+valid impute value samples: [-0.45852793 -0.45269553 -0.37531641 ... -0.36353035  2.11771435
+ -0.38285139]
+valid true value samples: [-0.44235439 -0.45190584 -0.38952671 ... -0.35021387  2.55122108
+ -0.36626701]
+valid impute error MAE: 0.41195287842757794
+valid impute error MSE: 0.986288673230526
+valid impute error MRE: 0.6273548630540529
+valid min impute error MAE: 0.411953
+valid min impute error MSE: 0.986289
+valid min impute error MRE: 0.627355
+elapsed time: 19.4348933
+min MAE error: epoch, MAE, time, MSE 0 0.411953 19.434893 0.986289
+min MSE error: epoch, MSE, time, MAE 0 0.986289 19.434893 0.411953
+which time window:0
+window_X: (383739, 3) (383739, 3)
+rows, cols: 600343 600343
+initial X nan: 0
+initial eval_X nan: 0
+in_channels: 3

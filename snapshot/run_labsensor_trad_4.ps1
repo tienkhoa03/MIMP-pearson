@@ -32,62 +32,11 @@ try {
     $prefix     = "no_pearson"
 
     $tradMethods = @("mean", "KNN", "MICE", "MF-mf")
-    $nnMethods   = @("brits", "saits")
+    $nnMethods   = @("saits")
 
     $totalExp    = ($tradMethods.Count + 1 + $nnMethods.Count) * $evalRatios.Count
     $current     = 0
     $globalStart = Get-Date
-
-    # ----------------------------------------
-    # trad.py  :  mean, KNN, MICE, MF
-    # ----------------------------------------
-    Write-Host ""
-    Write-Host "--- trad.py : mean / KNN / MICE / MF ---" -ForegroundColor Magenta
-
-    foreach ($method in $tradMethods) {
-        foreach ($eval in $evalRatios) {
-            $current++
-            $startTime = Get-Date
-            Write-Host ""
-            Write-Host "[$current/$totalExp] method=$method  eval=$eval" -ForegroundColor Yellow
-
-            & $pythonExe trad.py `
-                --dataset    $dataset `
-                --window     $window `
-                --k          $k `
-                --prefix     $prefix `
-                --method     $method `
-                --eval_ratio $eval `
-                --stream     $stream
-
-            $dur = (Get-Date) - $startTime
-            Write-Host "  done in $($dur.TotalMinutes.ToString('F2')) min" -ForegroundColor Green
-        }
-    }
-
-    # ----------------------------------------
-    # FP.py  :  feature propagation
-    # ----------------------------------------
-    Write-Host ""
-    Write-Host "--- FP.py : fp ---" -ForegroundColor Magenta
-
-    foreach ($eval in $evalRatios) {
-        $current++
-        $startTime = Get-Date
-        Write-Host ""
-        Write-Host "[$current/$totalExp] method=fp  eval=$eval" -ForegroundColor Yellow
-
-        & $pythonExe FP.py `
-            --dataset    $dataset `
-            --window     $window `
-            --k          $k `
-            --prefix     $prefix `
-            --eval_ratio $eval `
-            --stream     $stream
-
-        $dur = (Get-Date) - $startTime
-        Write-Host "  done in $($dur.TotalMinutes.ToString('F2')) min" -ForegroundColor Green
-    }
 
     # ----------------------------------------
     # nn.py  :  BRITS, SAITS

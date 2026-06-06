@@ -31,7 +31,7 @@ try {
     $k          = 10
     $prefix     = "no_pearson"
 
-    $tradMethods = @("mean", "KNN", "MICE", "MF-mf")
+    $tradMethods = @("MF-mf")
     $nnMethods   = @("brits", "saits")
 
     $totalExp    = ($tradMethods.Count + 1 + $nnMethods.Count) * $evalRatios.Count
@@ -87,32 +87,6 @@ try {
 
         $dur = (Get-Date) - $startTime
         Write-Host "  done in $($dur.TotalMinutes.ToString('F2')) min" -ForegroundColor Green
-    }
-
-    # ----------------------------------------
-    # nn.py  :  BRITS, SAITS
-    # ----------------------------------------
-    Write-Host ""
-    Write-Host "--- nn.py : BRITS / SAITS ---" -ForegroundColor Magenta
-
-    foreach ($nnMethod in $nnMethods) {
-        foreach ($eval in $evalRatios) {
-            $current++
-            $startTime = Get-Date
-            Write-Host ""
-            Write-Host "[$current/$totalExp] method=$nnMethod  eval=$eval" -ForegroundColor Yellow
-
-            & $pythonExe nn.py `
-                --dataset    $dataset `
-                --window     $window `
-                --prefix     $prefix `
-                --method     $nnMethod `
-                --eval_ratio $eval `
-                --stream     $stream
-
-            $dur = (Get-Date) - $startTime
-            Write-Host "  done in $($dur.TotalMinutes.ToString('F2')) min" -ForegroundColor Green
-        }
     }
 
     $totalDur = (Get-Date) - $globalStart
