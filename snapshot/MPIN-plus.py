@@ -11,6 +11,7 @@ import copy
 import numpy as np
 import random
 from datetime import datetime
+from sklearn.neighbors import NearestNeighbors
 from utils.DynamicGNN import (
     DynamicGCN,
     DynamicGAT,
@@ -26,7 +27,6 @@ from utils.DynamicGNN import (
     StaticGraphSAGEPlusDAMC,
 )
 from argparse import ArgumentParser
-from torch_geometric.nn import knn_graph
 from utils.load_dataset import (
     load_ICU_dataset,
     load_airquality_dataset,
@@ -117,6 +117,28 @@ def get_similarity_graph_snapshot(X, k=10, delta=0.3, window_length=2):
         layout="stream_major",
     )
     return edge_index.to(device)
+
+
+def build_knn_edge_index(X, k):
+    X_np = X.detach().cpu().numpy() if torch.is_tensor(X) else np.asarray(X)
+    n_samples = X_np.shape[0]
+    if n_samples == 0:
+        return torch.empty((2, 0), dtype=torch.long, device=device)
+
+    n_neighbors = min(k + 1, n_samples)
+    neighbors = NearestNeighbors(n_neighbors=n_neighbors, algorithm="auto", metric="euclidean")
+    neighbors.fit(X_np)
+    indices = neighbors.kneighbors(return_distance=False)
+
+    if indices.shape[1] > 1:
+        indices = indices[:, 1:]
+    else:
+        indices = np.empty((n_samples, 0), dtype=np.int64)
+
+    row = np.repeat(np.arange(n_samples, dtype=np.int64), indices.shape[1])
+    col = indices.reshape(-1)
+    edge_index = torch.tensor(np.vstack([row, col]), dtype=torch.long, device=device)
+    return edge_index
 
 
 def get_window_data(start, end, ratio):
@@ -270,7 +292,7 @@ def window_imputation(
             if edge_index.numel() == 0:
                 if args.fallback_knn == "true":
                     print(f"  No correlated feature pairs at delta={args.delta}; falling back to KNN.")
-                    edge_index = knn_graph(X_knn, args.k, batch=None, loop=False, cosine=False).to(device)
+                    edge_index = build_knn_edge_index(X_knn, args.k)
                 else:
                     print(f"  No correlated feature pairs at delta={args.delta}; proceeding with empty graph (fallback disabled).")
             else:
@@ -278,12 +300,12 @@ def window_imputation(
         except Exception as exc:
             if args.fallback_knn == "true":
                 print(f"  Feature Pearson graph failed ({exc}); falling back to KNN.")
-                edge_index = knn_graph(X_knn, args.k, batch=None, loop=False, cosine=False).to(device)
+                edge_index = build_knn_edge_index(X_knn, args.k)
             else:
                 raise
     else:
         print("Using standard KNN graph construction...")
-        edge_index = knn_graph(X_knn, args.k, batch=None, loop=False, cosine=False).to(device)
+        edge_index = build_knn_edge_index(X_knn, args.k)
 
     for pre_epoch in range(epochs):
 

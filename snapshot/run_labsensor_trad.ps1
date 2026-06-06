@@ -11,14 +11,22 @@ $ErrorActionPreference = "Stop"
 
 Push-Location $PSScriptRoot
 try {
+    $pythonExe = Join-Path $PSScriptRoot "..\venv311\Scripts\python.exe"
+    if (-Not (Test-Path $pythonExe)) {
+        $pythonExe = "python"
+    }
+
     Write-Host "========================================" -ForegroundColor Green
     Write-Host "Labsensor Traditional Baseline Experiments" -ForegroundColor Green
     Write-Host "  mean | KNN | MICE | MF | FP | BRITS | SAITS" -ForegroundColor Cyan
     Write-Host "========================================" -ForegroundColor Green
 
+    $cudaStatus = & $pythonExe -c "import torch; print('cuda' if torch.cuda.is_available() else 'cpu')"
+    Write-Host "Using $cudaStatus via $pythonExe" -ForegroundColor Green
+
     $dataset    = "Labsensor"
     $window     = 30
-    $stream     = 1
+    $stream     = 0.11
     $evalRatios = @(0.1, 0.3, 0.5)
     $k          = 10
     $prefix     = "no_pearson"
@@ -43,7 +51,7 @@ try {
             Write-Host ""
             Write-Host "[$current/$totalExp] method=$method  eval=$eval" -ForegroundColor Yellow
 
-            python trad.py `
+            & $pythonExe trad.py `
                 --dataset    $dataset `
                 --window     $window `
                 --k          $k `
@@ -69,7 +77,7 @@ try {
         Write-Host ""
         Write-Host "[$current/$totalExp] method=fp  eval=$eval" -ForegroundColor Yellow
 
-        python FP.py `
+        & $pythonExe FP.py `
             --dataset    $dataset `
             --window     $window `
             --k          $k `
@@ -94,7 +102,7 @@ try {
             Write-Host ""
             Write-Host "[$current/$totalExp] method=$nnMethod  eval=$eval" -ForegroundColor Yellow
 
-            python nn.py `
+            & $pythonExe nn.py `
                 --dataset    $dataset `
                 --window     $window `
                 --prefix     $prefix `

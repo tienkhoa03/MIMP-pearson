@@ -1,0 +1,14 @@
+# Requirements for Python 3.11 (venv311)
+# NOTE: Install PyTorch separately using the included PowerShell script
+# to pick the correct CUDA-enabled wheel for your GPU.
+
+numpy>=1.25.0
+pandas>=2.2.0
+scikit-learn>=1.2.2
+tsdb==0.0.9
+pypots==0.0.7
+fancyimpute
+matplotlib>=3.6.0
+tqdm>=4.65.0
+
+# Optional / project-specific extras can be added below as needed.

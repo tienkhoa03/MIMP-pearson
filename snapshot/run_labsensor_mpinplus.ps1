@@ -8,14 +8,22 @@ $ErrorActionPreference = "Stop"
 
 Push-Location $PSScriptRoot
 try {
+    $pythonExe = Join-Path $PSScriptRoot "..\venv311\Scripts\python.exe"
+    if (-Not (Test-Path $pythonExe)) {
+        $pythonExe = "python"
+    }
+
     Write-Host "========================================" -ForegroundColor Green
     Write-Host "Labsensor MPIN-plus Experiments" -ForegroundColor Green
     Write-Host "  SAGE (mpin) | GAT (mimp-gatv2) | SAGE++DA (mimp-sage++da)" -ForegroundColor Cyan
     Write-Host "========================================" -ForegroundColor Green
 
+    $cudaStatus = & $pythonExe -c "import torch; print('cuda' if torch.cuda.is_available() else 'cpu')"
+    Write-Host "Using $cudaStatus via $pythonExe" -ForegroundColor Green
+
     $dataset    = "Labsensor"
     $window     = 30
-    $stream     = 1
+    $stream     = 0.01
     $evalRatios = @(0.1, 0.3, 0.5)
     $epochs     = 200
     $numIter    = 5
@@ -38,7 +46,7 @@ try {
             Write-Host ""
             Write-Host "[$current/$totalExp] base=$base  eval=$eval" -ForegroundColor Yellow
 
-            python MPIN-plus.py `
+            & $pythonExe MPIN-plus.py `
                 --dataset     $dataset `
                 --window      $window `
                 --k           $k `
