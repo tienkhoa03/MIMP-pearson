@@ -298,7 +298,8 @@ def window_imputation(start, end, sample_ratio, initial_state_dict=None, X_last=
         elif concrete_meth == 'iter':
             MF_imputer = IterativeSVD()
         elif concrete_meth == 'mf':
-            MF_imputer = MatrixFactorization()
+            safe_rank = min(X_input.shape[1] - 1, 40)
+            MF_imputer = MatrixFactorization(rank=safe_rank)
         X_imputed = MF_imputer.fit_transform(X_input)
         X_imputed = np.asarray(X_imputed)
         if not np.isfinite(X_imputed).all():
