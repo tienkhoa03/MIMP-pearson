@@ -307,6 +307,8 @@ def window_imputation(
         print("Using standard KNN graph construction...")
         edge_index = build_knn_edge_index(X_knn, args.k)
 
+    edge_index = edge_index.to(device)
+
     for pre_epoch in range(epochs):
 
         gnn.train()

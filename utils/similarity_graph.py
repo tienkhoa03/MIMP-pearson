@@ -197,6 +197,20 @@ def get_feature_pearson_graph(X, k, delta):
 
     X_active = X_cpu[:, active]                       # (N, active_F)
 
-    from torch_geometric.nn import knn_graph as _knn
-    edge_index = _knn(X_active, k, batch=None, loop=False, cosine=False)
-    return edge_index.to(device), pearson
+    import numpy as np
+    from sklearn.neighbors import NearestNeighbors
+
+    X_np = X_active.numpy()
+    n_samples = X_np.shape[0]
+    n_neighbors = min(k + 1, n_samples)
+    nbrs = NearestNeighbors(n_neighbors=n_neighbors, algorithm="auto", metric="euclidean")
+    nbrs.fit(X_np)
+    indices = nbrs.kneighbors(return_distance=False)
+    if indices.shape[1] > 1:
+        indices = indices[:, 1:]  # drop self-loop column
+    else:
+        indices = np.empty((n_samples, 0), dtype=np.int64)
+    row = np.repeat(np.arange(n_samples, dtype=np.int64), indices.shape[1])
+    col = indices.reshape(-1)
+    edge_index = torch.tensor(np.vstack([row, col]), dtype=torch.long, device=device)
+    return edge_index, pearson
