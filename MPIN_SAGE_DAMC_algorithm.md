@@ -127,110 +127,88 @@ Ma trận X lúc này **không còn ô NaN hay ô 0 bất hợp lý** — mỗi 
 
 ## Bước 4 — Xây dựng đồ thị bằng Pearson-filtered KNN
 
-### 4.1 Tính ma trận Pearson giữa các feature
+### 4.1 Tính ma trận Pearson giữa các stream (sample)
 
-Nhìn X_knn theo chiều cột: mỗi cột là một chuỗi thời gian của một feature. Tính **hệ số tương quan Pearson** giữa từng cặp feature:
+X_knn được chia thành các **stream** — mỗi stream là một đoạn `window_length` timestep liên tiếp. Mỗi stream được flatten thành một vector rồi tính **hệ số tương quan Pearson** giữa từng cặp stream:
 
 ```
-pearson[i, j] = corr(cột feature_i, cột feature_j)
+pearson[i, j] = corr(flatten(stream_i), flatten(stream_j))
 ```
 
-Kết quả là ma trận F × F (F = 3 feature):
+Kết quả là ma trận S × S (S = num_nodes // window_length):
 
-> **Ví dụ với 6 timestep:**
+> **Ví dụ với 6 timestep, window_length=2 → 3 streams:**
 >
 > ```
->               Nhiệt độ   Độ ẩm   Ánh sáng
-> Nhiệt độ  [   1.00       0.99      0.98  ]
-> Độ ẩm     [   0.99       1.00      0.97  ]
-> Ánh sáng  [   0.98       0.97      1.00  ]
+> stream_0 = [t=0, t=1]  → flatten → [−1.10, −1.12, −1.08, −0.80, −0.80, −0.03]
+> stream_1 = [t=2, t=3]  → flatten → [−0.04, −0.22, −0.36, +0.19, +0.14, +0.32]
+> stream_2 = [t=4, t=5]  → flatten → [+0.75, +0.87, +0.55, +1.00, +1.13, +0.60]
 > ```
 >
-> Ba sensor trong lab có xu hướng tăng giảm cùng nhau nên Pearson rất cao.
+> ```
+>            stream_0   stream_1   stream_2
+> stream_0  [  1.00       0.96       0.94  ]
+> stream_1  [  0.96       1.00       0.99  ]
+> stream_2  [  0.94       0.99       1.00  ]
+> ```
+>
+> Các stream trong cùng một chuỗi thời gian có xu hướng tương quan cao.
 
 Đường chéo (tự tương quan) bị bỏ qua (= False).
 
-### 4.2 Lọc feature theo ngưỡng delta
+### 4.2 Lọc stream theo ngưỡng delta
 
-Áp dụng ngưỡng `delta`: một feature được coi là **active** nếu nó có **ít nhất một cặp** với feature khác mà `|pearson| >= delta`.
+Áp dụng ngưỡng `delta`: một stream được phép nối cạnh với stream khác chỉ khi `|pearson[i, j]| >= delta`.
 
 > **Ví dụ:**
 >
-> | delta | Cặp vượt ngưỡng | Feature active | Kết quả |
-> |-------|-----------------|----------------|---------|
-> | 0.50  | (0,1), (0,2), (1,2) | [0, 1, 2] tất cả | Dùng cả 3 feature để tính KNN |
-> | 0.98  | (0,1) vượt (=0.99), (0,2) vượt (=0.98), (1,2) không (=0.97) | [0, 1, 2] | Dùng cả 3 |
-> | 0.99  | Không cặp nào vượt | Không có | → Đồ thị rỗng (xem mục fallback) |
+> | delta | Cặp stream vượt ngưỡng | Kết quả |
+> |-------|------------------------|---------|
+> | 0.90  | (0,1)=0.96, (0,2)=0.94, (1,2)=0.99 — tất cả | Tất cả stream đều có thể nối nhau |
+> | 0.95  | (0,1)=0.96, (1,2)=0.99 vượt; (0,2)=0.94 không | stream_0 chỉ nối được stream_1 |
+> | 0.99  | Không cặp nào vượt | → Đồ thị rỗng (xem mục fallback) |
 
-### 4.3 Xây dựng KNN graph trên các feature active
+### 4.3 Xây dựng KNN graph trên các node của stream tương quan
 
-Chỉ lấy các cột feature **active** từ X_knn, tạo ma trận con **X_active** (shape: N × active_F).
+Với mỗi stream `i`, chỉ tìm k láng giềng gần nhất của các node trong `stream_i` **từ các stream `j` mà `|pearson[i,j]| >= delta`**. Khoảng cách tính theo Euclidean giữa các vector feature của node.
 
-Với X_active, tính **k láng giềng gần nhất** cho mỗi node (timestep) theo khoảng cách Euclidean:
-
-> **Ví dụ (k=2, delta=0.50, cả 3 feature active):**
+> **Ví dụ (k=2, delta=0.90):**
 >
-> X_active (chuẩn hoá, đã điền) — mỗi dòng là một timestep:
-> ```
-> Node   Nhiệt độ   Độ ẩm   Ánh sáng
-> t=0    −1.10      −1.12    −1.08
-> t=1    −0.80      −0.80    −0.03  (Ánh sáng điền mean)
-> t=2    −0.04      −0.22    −0.36
-> t=3    +0.19      +0.14    +0.32
-> t=4    +0.75      +0.87    +0.55
-> t=5    +1.00      +1.13    +0.60
-> ```
+> stream_1 (gồm t=2, t=3) có thể nối sang stream_0 và stream_2.
+> Candidate nodes: {t=0, t=1} ∪ {t=4, t=5}.
 >
-> Khoảng cách Euclidean giữa t=1 và các node khác:
-> - dist(t=1, t=0) = 1.43
-> - dist(t=1, t=2) = 0.84  ← gần nhất
-> - dist(t=1, t=3) = 0.60  ← gần nhì
-> - dist(t=1, t=4) = 1.72
-> - dist(t=1, t=5) = 2.05
+> ```
+> dist(t=2, t=0) = 1.55   dist(t=2, t=1) = 0.84 ← gần nhất
+> dist(t=2, t=4) = 1.35   dist(t=2, t=5) = 1.70
+> → t=2 nối với t=1 và t=4
 >
-> → t=1 được nối cạnh với t=2 và t=3.
-
-Làm tương tự cho tất cả node. Kết quả là **edge_index**: danh sách các cặp (node_src, node_dst) nối với nhau.
-
-> **Ví dụ edge_index với k=2:**
-> ```
-> (t=0 → t=1), (t=0 → t=2)
-> (t=1 → t=2), (t=1 → t=3)
-> (t=2 → t=1), (t=2 → t=3)
-> (t=3 → t=2), (t=3 → t=4)
-> (t=4 → t=3), (t=4 → t=5)
-> (t=5 → t=4), (t=5 → t=3)
+> dist(t=3, t=0) = 1.73   dist(t=3, t=1) = 0.60 ← gần nhất
+> dist(t=3, t=4) = 0.84   dist(t=3, t=5) = 1.09
+> → t=3 nối với t=1 và t=4
 > ```
 
-### 4.4 Các trường hợp fallback
+Làm tương tự cho tất cả stream. Kết quả là **edge_index**: danh sách các cặp (node_src, node_dst).
 
-#### Trường hợp A — Không có cặp feature nào vượt ngưỡng delta (đồ thị rỗng)
+> **Ý nghĩa:** Cạnh chỉ nối các node thuộc các đoạn thời gian có **pattern tương tự nhau** — không nối bừa với các stream có pattern khác biệt.
 
-Xảy ra khi delta quá cao (ví dụ delta=0.99 với Labsensor 3 feature).
+### 4.4 Trường hợp fallback — Không có cặp stream nào vượt ngưỡng delta
+
+Xảy ra khi delta quá cao hoặc dữ liệu có tính tương quan thấp.
 
 ```
 Kiểm tra edge_index.numel() == 0 → True
-  ├─ fallback_knn = true  → Build KNN thông thường trên toàn bộ feature
-  │                          (không lọc Pearson, dùng tất cả cột của X_knn)
-  │                          → Model vẫn có đồ thị, aggregate được thông tin láng giềng
-  │
-  └─ fallback_knn = false → Tiếp tục với đồ thị rỗng (không cạnh nào)
-                             → Model chạy như MLP thuần: mỗi node xử lý độc lập,
-                               chỉ học tương quan giữa các feature tại cùng timestep
+  → Fallback: build KNN thông thường trên toàn bộ feature
+              (không lọc Pearson, dùng tất cả cột của X_knn)
+              → Model vẫn có đồ thị, aggregate được thông tin láng giềng
 ```
 
-> **Ý nghĩa thực nghiệm:** Khi `fallback_knn=false` và đồ thị rỗng, MAE ghi được là baseline "không có temporal context". So sánh với delta thấp hơn (có đồ thị) để đo giá trị của graph structure.
-
-#### Trường hợp B — Có cặp feature vượt ngưỡng, nhưng build KNN lỗi
-
-Xảy ra khi thư viện `pyg-lib` chưa cài (lỗi `ImportError`). Sau khi fix, dùng sklearn thay thế nên trường hợp này không còn xảy ra.
+Nếu quá trình build đồ thị gặp lỗi bất kỳ, fallback cũng được kích hoạt.
 
 ```
 try:
-    get_feature_pearson_graph(...)   ← build KNN bằng sklearn (đã fix)
+    get_similarity_graph(...)   ← build Pearson-filtered graph
 except Exception as exc:
-  ├─ fallback_knn = true  → Build KNN toàn feature (an toàn)
-  └─ fallback_knn = false → raise lỗi, dừng experiment, ghi log
+    → fallback KNN toàn feature (an toàn)
 ```
 
 ---
@@ -409,21 +387,19 @@ pred[v] = MLP(x_out[v])
 ## Tóm tắt luồng chạy theo delta
 
 ```
-delta=0.9  →  Không cặp nào (pearson Labsensor ≤ 0.85 thực tế)
-           →  edge_index rỗng
-           →  fallback_knn=false → đồ thị rỗng → MLP mode
-           →  Ghi CSV kết quả
+delta=0.9  →  Một số cặp stream vượt ngưỡng nếu dữ liệu đủ tương quan
+           →  Nếu không cặp nào vượt → edge_index rỗng → fallback KNN toàn feature
 
-delta=0.5  →  Có cặp feature vượt ngưỡng (ví dụ: Temp-Humid, Temp-Light)
-           →  Feature active = [Temp, Humid, Light] (cả 3)
-           →  Build KNN (k=10) trên X_active với sklearn
+delta=0.5  →  Nhiều cặp stream vượt ngưỡng hơn
+           →  Build KNN (k=10) chỉ nối node giữa các stream tương quan
            →  edge_index có cạnh → GNN aggregate được temporal context
            →  Ghi CSV kết quả
 
-delta=0.3  →  Tương tự delta=0.5, nhiều cặp hơn (nếu tất cả feature đều active thì giống nhau)
+delta=0.3  →  Tương tự delta=0.5, thêm nhiều cặp stream được phép nối
 
-delta=0.0  →  Tất cả cặp đều vượt ngưỡng (ngưỡng = 0)
-           →  Giống hệt KNN toàn feature không lọc Pearson
+delta=0.0  →  Tất cả cặp stream đều vượt ngưỡng
+           →  Mỗi node có thể nối với bất kỳ node nào ở stream khác
+           →  Tương đương KNN toàn tập không lọc Pearson
 ```
 
 ---
@@ -445,12 +421,11 @@ Dữ liệu thô (Labsensor)
         ▼
 [Bước 4] Tính Pearson (F×F)
         │
-        ├─ Có cặp vượt delta?
-        │       │ Có → chọn active features → KNN(X_active, k=10) → edge_index
+        ├─ Có cặp stream vượt delta?
+        │       │ Có → KNN(node của stream tương quan, k=10) → edge_index
         │       │ Không → edge_index rỗng
         │               │
-        │               ├─ fallback=true  → KNN(X_knn toàn feature) → edge_index
-        │               └─ fallback=false → edge_index rỗng (MLP mode)
+        │               └─ fallback → KNN(X_knn toàn feature) → edge_index
         │
         ▼
 [Bước 5-6] Training (200 epoch):

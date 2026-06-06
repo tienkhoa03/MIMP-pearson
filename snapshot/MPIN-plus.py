@@ -39,7 +39,7 @@ from pypots.utils.metrics import cal_mae, cal_mse, cal_mre
 
 from sklearn.preprocessing import StandardScaler
 from scipy.stats import pearsonr
-from utils.similarity_graph import get_similarity_graph, get_feature_pearson_graph
+from utils.similarity_graph import get_similarity_graph
 
 
 
@@ -285,24 +285,20 @@ def window_imputation(
 
     # Build graph
     if args.use_pearson == "true":
-        print("Using feature-Pearson filtered graph construction...")
+        print("Using sample-Pearson filtered graph construction...")
         try:
-            edge_index, feat_pearson = get_feature_pearson_graph(X_knn, k=args.k, delta=args.delta)
-            print(f"  Feature Pearson matrix:\n{feat_pearson.numpy().round(3)}")
+            edge_index, stream_pearson = get_similarity_graph(
+                X_knn, window_length=args.window, k=args.k, delta=args.delta
+            )
+            print(f"  Stream Pearson matrix:\n{stream_pearson.numpy().round(3)}")
             if edge_index.numel() == 0:
-                if args.fallback_knn == "true":
-                    print(f"  No correlated feature pairs at delta={args.delta}; falling back to KNN.")
-                    edge_index = build_knn_edge_index(X_knn, args.k)
-                else:
-                    print(f"  No correlated feature pairs at delta={args.delta}; proceeding with empty graph (fallback disabled).")
-            else:
-                print(f"  Graph built on correlated features: {edge_index.shape[1]} edges.")
-        except Exception as exc:
-            if args.fallback_knn == "true":
-                print(f"  Feature Pearson graph failed ({exc}); falling back to KNN.")
+                print(f"  No correlated streams at delta={args.delta}; falling back to KNN.")
                 edge_index = build_knn_edge_index(X_knn, args.k)
             else:
-                raise
+                print(f"  Graph built on correlated streams: {edge_index.shape[1]} edges.")
+        except Exception as exc:
+            print(f"  Sample Pearson graph failed ({exc}); falling back to KNN.")
+            edge_index = build_knn_edge_index(X_knn, args.k)
     else:
         print("Using standard KNN graph construction...")
         edge_index = build_knn_edge_index(X_knn, args.k)
@@ -486,7 +482,6 @@ parser.add_argument("--dynamic", type=str, default="false")
 parser.add_argument("--dataset", type=str, default="ICU")
 parser.add_argument("--delta", type=float, default=0.3, help="Pearson correlation threshold for graph filtering (0-1)")
 parser.add_argument("--use_pearson", type=str, default="false", help="Use Pearson-filtered graph construction")
-parser.add_argument("--fallback_knn", type=str, default="true", help="Fall back to standard KNN when Pearson yields no edges (true/false)")
 
 
 args = parser.parse_args()
