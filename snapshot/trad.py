@@ -25,6 +25,24 @@ from sklearn.experimental import enable_iterative_imputer
 from sklearn.impute import IterativeImputer
 from sklearn.impute import SimpleImputer, KNNImputer
 
+
+def _patch_fancyimpute_check_array_compat():
+    import sklearn.utils
+    from sklearn.utils import validation as sklearn_validation
+
+    original_check_array = sklearn_validation.check_array
+
+    def compat_check_array(*args, **kwargs):
+        if "force_all_finite" in kwargs and "ensure_all_finite" not in kwargs:
+            kwargs["ensure_all_finite"] = kwargs.pop("force_all_finite")
+        return original_check_array(*args, **kwargs)
+
+    sklearn_validation.check_array = compat_check_array
+    sklearn.utils.check_array = compat_check_array
+
+
+_patch_fancyimpute_check_array_compat()
+
 parser = ArgumentParser()
 parser.add_argument("--incre_mode", type=str, default='alone')
 parser.add_argument("--sample_ratio", type=float, default=0.1)

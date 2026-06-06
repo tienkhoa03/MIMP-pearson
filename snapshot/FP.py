@@ -16,7 +16,6 @@ from datetime import datetime
 from utils.DynamicGNN import DynamicGCN, DynamicGAT, DynamicGraphSAGE
 from argparse import ArgumentParser
 from torch_geometric.data import Data
-from torch_geometric.nn import knn_graph, radius_graph
 from utils.load_dataset import load_ICU_dataset, load_airquality_dataset, load_WiFi_dataset, load_IBRL_dataset
 from torch_geometric.transforms import FeaturePropagation
 from pypots.utils.metrics import cal_mae, cal_mse, cal_mre
@@ -45,6 +44,27 @@ parser.add_argument("--lr", type=float, default=0.01)
 parser.add_argument("--weight_decay", type=float, default=0.1)
 
 args = parser.parse_args()
+
+
+def build_knn_edge_index(X, k):
+    X_np = X.detach().cpu().numpy() if torch.is_tensor(X) else np.asarray(X)
+    n_samples = X_np.shape[0]
+    if n_samples == 0:
+        return torch.empty((2, 0), dtype=torch.long, device=device)
+
+    n_neighbors = min(k + 1, n_samples)
+    neighbors = NearestNeighbors(n_neighbors=n_neighbors, algorithm='auto', metric='euclidean')
+    neighbors.fit(X_np)
+    indices = neighbors.kneighbors(return_distance=False)
+
+    if indices.shape[1] > 1:
+        indices = indices[:, 1:]
+    else:
+        indices = np.empty((n_samples, 0), dtype=np.int64)
+
+    row = np.repeat(np.arange(n_samples, dtype=np.int64), indices.shape[1])
+    col = indices.reshape(-1)
+    return torch.tensor(np.vstack([row, col]), dtype=torch.long, device=device)
 
 
 # Redirect stdout to log and console
@@ -227,7 +247,7 @@ def window_imputation(start, end, sample_ratio, initial_state_dict=None, X_last=
     eval_mask = torch.LongTensor(eval_mask).to(device)
     X_imputed = copy.copy(X)
 
-    edge_index = knn_graph(X_imputed, args.k, batch=None, loop=False)
+    edge_index = build_knn_edge_index(X_imputed, args.k)
     data = Data(x=X_imputed, edge_index=edge_index, num_of_iteration=args.epochs)
     transform = FeaturePropagation(missing_mask=(~(X_mask.bool())))
     data = transform(data)

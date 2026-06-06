@@ -1,0 +1,51 @@
+starting time: 2026-06-06 15:54:47.920210
+device: cuda
+dataset:Labsensor
+Applying stream subsample: keeping 3488 / 3488540 rows
+mean_X 83.03170090396499
+std_X 130.09124113088524
+base Labsensor data shape: (3488, 3) (3488, 3)
+which time window:0
+window_X: (3488, 3) (3488, 3)
+rows, cols: 5019 5019
+initial X nan: 0
+initial eval_X nan: 0
+in_channels: 3
+starting time: 2026-06-06 15:55:29.614820
+device: cuda
+dataset:Labsensor
+Applying stream subsample: keeping 3488 / 3488540 rows
+mean_X 83.03170090396499
+std_X 130.09124113088524
+base Labsensor data shape: (3488, 3) (3488, 3)
+which time window:0
+window_X: (3488, 3) (3488, 3)
+rows, cols: 5019 5019
+initial X nan: 0
+initial eval_X nan: 0
+in_channels: 3
+[MatrixFactorization] Iter 10: observed MAE=0.008535 rank=40
+[MatrixFactorization] Iter 20: observed MAE=0.004222 rank=40
+[MatrixFactorization] Iter 30: observed MAE=0.003674 rank=40
+[MatrixFactorization] Iter 40: observed MAE=0.003226 rank=40
+[MatrixFactorization] Iter 50: observed MAE=0.002888 rank=40
+trans_X shape (3488, 3)
+trans_eval_X shape (3488, 3)
+nan of X_imputed: 0
+nan of eval_X: 0
+valid impute value samples: [ 0.60172411 -0.46779661 -0.48118338 ... -0.33956457  0.92750054
+ -0.49283575]
+valid true value samples: [ 3.03916156 -0.48762161 -0.47006932 ... -0.34469654  1.08730071
+ -0.49500412]
+valid impute error MAE: 0.41805408209199324
+valid impute error MSE: 1.2030081071721794
+valid impute error MRE: 0.6753385970694974
+valid min impute error MAE: 0.418054
+valid min impute error MSE: 1.203008
+valid min impute error MRE: 0.675339
+elapsed time: 0.05514126666666667
+min MAE error: epoch, MAE, time, MSE 0 0.418054 0.055141 1.203008
+min MSE error: epoch, MSE, time, MAE 0 1.203008 0.055141 0.418054
+ready to write data!
+done!
+finishing time: 2026-06-06 15:55:43.975723
