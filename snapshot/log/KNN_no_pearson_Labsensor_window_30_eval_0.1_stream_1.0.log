@@ -1,0 +1,12 @@
+starting time: 2026-06-06 08:07:22.103933
+device: cpu
+dataset:Labsensor
+mean_X 157.21734070415212
+std_X 286.35924623708695
+base Labsensor data shape: (3488540, 3) (3488540, 3)
+which time window:0
+window_X: (3488540, 3) (3488540, 3)
+rows, cols: 5390067 5390067
+initial X nan: 0
+initial eval_X nan: 0
+in_channels: 3

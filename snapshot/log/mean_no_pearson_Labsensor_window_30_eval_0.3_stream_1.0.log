@@ -1,0 +1,124 @@
+starting time: 2026-06-06 08:06:29.643889
+device: cpu
+dataset:Labsensor
+mean_X 157.21734070415212
+std_X 286.35924623708695
+base Labsensor data shape: (3488540, 3) (3488540, 3)
+which time window:0
+window_X: (3488540, 3) (3488540, 3)
+rows, cols: 5390067 5390067
+initial X nan: 0
+initial eval_X nan: 0
+in_channels: 3
+trans_X shape (3488540, 3)
+trans_eval_X shape (3488540, 3)
+nan of X_imputed: 0
+nan of eval_X: 0
+valid impute value samples: [-0.47117228 -0.47117228  0.88165719 ... -0.47117228  0.88165719
+ -0.47117228]
+valid true value samples: [-0.47299098 -0.48058843 -0.4108732  ... -0.47323054 -0.5458086
+ -0.47182741]
+valid impute error MAE: 0.49197202292913095
+valid impute error MSE: 1.188940791801921
+valid impute error MRE: 0.6916949456579853
+valid min impute error MAE: 0.491972
+valid min impute error MSE: 1.188941
+valid min impute error MRE: 0.691695
+elapsed time: 0.009509916666666667
+min MAE error: epoch, MAE, time, MSE 0 0.491972 0.00951 1.188941
+min MSE error: epoch, MSE, time, MAE 0 1.188941 0.00951 0.491972
+which time window:0
+window_X: (3488540, 3) (3488540, 3)
+rows, cols: 3773047 3773047
+initial X nan: 0
+initial eval_X nan: 0
+in_channels: 3
+trans_X shape (3488540, 3)
+trans_eval_X shape (3488540, 3)
+nan of X_imputed: 0
+nan of eval_X: 0
+valid impute value samples: [-0.33991975  0.72885117 -0.33991975 ... -0.33991975  0.72885117
+  0.72885117]
+valid true value samples: [-0.37700491 -0.5458086  -0.39229863 ... -0.38232934 -0.5458086
+ -0.5458086 ]
+valid impute error MAE: 0.5144944736202168
+valid impute error MSE: 1.1923411879346122
+valid impute error MRE: 0.7245602240967215
+valid min impute error MAE: 0.514494
+valid min impute error MSE: 1.192341
+valid min impute error MRE: 0.72456
+elapsed time: 0.009074716666666668
+min MAE error: epoch, MAE, time, MSE 0 0.514494 0.009075 1.192341
+min MSE error: epoch, MSE, time, MAE 0 1.192341 0.009075 0.514494
+which time window:0
+window_X: (3488540, 3) (3488540, 3)
+rows, cols: 2641133 2641133
+initial X nan: 0
+initial eval_X nan: 0
+in_channels: 3
+trans_X shape (3488540, 3)
+trans_eval_X shape (3488540, 3)
+nan of X_imputed: 0
+nan of eval_X: 0
+valid impute value samples: [-0.33718684 -0.29428435  0.63120667 ...  0.63120667 -0.33718684
+ -0.29428435]
+valid true value samples: [-0.47846662 -0.42020728 -0.37232023 ... -0.54741498 -0.45492137
+ -0.39380094]
+valid impute error MAE: 0.5364575554491314
+valid impute error MSE: 1.213335101069281
+valid impute error MRE: 0.7562256553166964
+valid min impute error MAE: 0.536458
+valid min impute error MSE: 1.213335
+valid min impute error MRE: 0.756226
+elapsed time: 0.008614816666666667
+min MAE error: epoch, MAE, time, MSE 0 0.536458 0.008615 1.213335
+min MSE error: epoch, MSE, time, MAE 0 1.213335 0.008615 0.536458
+which time window:0
+window_X: (3488540, 3) (3488540, 3)
+rows, cols: 1848794 1848794
+initial X nan: 0
+initial eval_X nan: 0
+in_channels: 3
+trans_X shape (3488540, 3)
+trans_eval_X shape (3488540, 3)
+nan of X_imputed: 0
+nan of eval_X: 0
+valid impute value samples: [ 0.56684202 -0.30273706 -0.26418639 ... -0.30273706  0.56684202
+ -0.26418639]
+valid true value samples: [-0.22132109 -0.47278564 -0.42454275 ... -0.47127984 -0.54420223
+ -0.39461111]
+valid impute error MAE: 0.5535242629318108
+valid impute error MSE: 1.238695073166252
+valid impute error MRE: 0.7793630225729621
+valid min impute error MAE: 0.553524
+valid min impute error MSE: 1.238695
+valid min impute error MRE: 0.779363
+elapsed time: 0.008546699999999999
+min MAE error: epoch, MAE, time, MSE 0 0.553524 0.008547 1.238695
+min MSE error: epoch, MSE, time, MAE 0 1.238695 0.008547 0.553524
+which time window:0
+window_X: (3488540, 3) (3488540, 3)
+rows, cols: 1294156 1294156
+initial X nan: 0
+initial eval_X nan: 0
+in_channels: 3
+trans_X shape (3488540, 3)
+trans_eval_X shape (3488540, 3)
+nan of X_imputed: 0
+nan of eval_X: 0
+valid impute value samples: [ 0.52380937 -0.24398848 -0.27963514 ...  0.52380937 -0.27963514
+ -0.24398848]
+valid true value samples: [ 1.12160743 -0.37250776 -0.47189585 ... -0.50725563 -0.47401766
+ -0.39867733]
+valid impute error MAE: 0.5626280371210169
+valid impute error MSE: 1.2414752362262087
+valid impute error MRE: 0.7943281895345616
+valid min impute error MAE: 0.562628
+valid min impute error MSE: 1.241475
+valid min impute error MRE: 0.794328
+elapsed time: 0.008243883333333334
+min MAE error: epoch, MAE, time, MSE 0 0.562628 0.008244 1.241475
+min MSE error: epoch, MSE, time, MAE 0 1.241475 0.008244 0.562628
+ready to write data!
+done!
+finishing time: 2026-06-06 08:06:49.979251

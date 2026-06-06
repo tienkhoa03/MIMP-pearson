@@ -1,6 +1,7 @@
 import sys
+import os
+sys.path.append('../')
 import pandas as pd
-# sys.path.append('/home/xiaol/Documents')
 import torch
 # from OCW.models.regressor import MLPNet
 from utils.regressor import MLPNet
@@ -17,12 +18,11 @@ from utils.DynamicGNN import DynamicGCN, DynamicGAT, DynamicGraphSAGE
 from argparse import ArgumentParser
 from torch_geometric.data import Data
 from torch_geometric.nn import knn_graph, radius_graph
-from utils.load_dataset import load_ICU_dataset, load_airquality_dataset, load_WiFi_dataset
+from utils.load_dataset import load_ICU_dataset, load_airquality_dataset, load_WiFi_dataset, load_IBRL_dataset
 from torch_geometric.transforms import FeaturePropagation
 from pypots.utils.metrics import cal_mae, cal_mse, cal_mre
 from sklearn.experimental import enable_iterative_imputer
 from sklearn.impute import IterativeImputer
-from fancyimpute import MatrixFactorization, SoftImpute, BiScaler, IterativeSVD
 from sklearn.impute import SimpleImputer, KNNImputer
 
 parser = ArgumentParser()
@@ -66,6 +66,8 @@ class Logger:
         pass
 
 # Redirect print() output to both console and file
+os.makedirs('./log', exist_ok=True)
+os.makedirs('./exp_results', exist_ok=True)
 log_file_name = f"{args.method}_{args.prefix}_{args.dataset}_window_{args.window}_eval_{args.eval_ratio}_stream_{args.stream}.log"
 sys.stdout = Logger(f"./log/{log_file_name}")
 
@@ -73,7 +75,8 @@ st = datetime.now()
 print('starting time:', st)
 
 torch.random.manual_seed(2021)
-device = torch.device('cpu')
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+print('device:', device)
 out_channels = args.out_channels
 lr = args.lr
 weight_decay = args.weight_decay
@@ -133,6 +136,26 @@ elif args.dataset == 'Airquality':
     print('std_X', std_X)
     base_X = (base_X - mean_X) / std_X
     print('base Airquality data shape:', base_X.shape, base_X_mask.shape)
+
+elif args.dataset == 'Labsensor':
+    print('dataset:Labsensor')
+    base_X = load_IBRL_dataset(method='mpin')
+    base_X_mask = (~np.isnan(base_X)).astype(int)
+    base_X = base_X.copy()
+    if args.stream < 1.0:
+        num_rows = max(1, int(base_X.shape[0] * args.stream))
+        print(f'Applying stream subsample: keeping {num_rows} / {base_X.shape[0]} rows')
+        base_X = base_X[:num_rows]
+        base_X_mask = base_X_mask[:num_rows]
+    feature_means = np.nanmean(base_X, axis=0)
+    for col in range(base_X.shape[1]):
+        base_X[np.isnan(base_X[:, col]), col] = feature_means[col]
+    mean_X = np.mean(base_X)
+    print('mean_X', mean_X)
+    std_X = np.std(base_X)
+    print('std_X', std_X)
+    base_X = (base_X - mean_X) / std_X
+    print('base Labsensor data shape:', base_X.shape, base_X_mask.shape)
 
 
 def build_GNN(in_channels, out_channels, k, base):
@@ -240,10 +263,10 @@ def window_imputation(start, end, sample_ratio, initial_state_dict=None, X_last=
             X_imputed = imputer.transform(X_input)
 
     elif args.method.startswith('MF'):
+        from fancyimpute import MatrixFactorization, SoftImpute, BiScaler, IterativeSVD
         concrete_meth = args.method.split('-')[-1]
         X_input = copy.deepcopy(X)
         X_input[np.where(eval_mask == 1)] = np.nan
-        # X_input[np.where(X_mask == 0)] = np.nan
 
         if concrete_meth == 'soft':
             MF_imputer = SoftImpute()

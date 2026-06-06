@@ -11,9 +11,10 @@ import torch.nn.functional as F
 from argparse import ArgumentParser
 from pypots.utils.metrics import cal_mae, cal_mse, cal_mre
 import sys
-sys.path.append('/home/xiaol/Documents')
+import os
+sys.path.append('../')
 
-from utils.load_dataset import load_ICU_dataset, load_airquality_dataset, load_WiFi_dataset, get_model_size
+from utils.load_dataset import load_ICU_dataset, load_airquality_dataset, load_WiFi_dataset, load_IBRL_dataset, get_model_size
 from datetime import datetime
 
 
@@ -46,14 +47,16 @@ class Logger:
         pass
 
 # Redirect print() output to both console and file
+os.makedirs('./log', exist_ok=True)
+os.makedirs('./exp_results', exist_ok=True)
 log_file_name = f"{args.method}_{args.prefix}_{args.dataset}_window_{args.window}_eval_{args.eval_ratio}_stream_{args.stream}.log"
 sys.stdout = Logger(f"./log/{log_file_name}")
 
 
 # Data preprocessing. Tedious, but PyPOTS can help. 🤓
 
-# device = torch.device('cuda')
-device = torch.device('cpu')
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+print('device:', device)
 
 
 
@@ -63,6 +66,11 @@ elif args.dataset == 'Airquality':
     X = load_airquality_dataset(window=args.window, stream=args.stream)
 elif args.dataset in ["KDM", "WDS", "LHS"]:
     X = load_WiFi_dataset(window=args.window, dataset_name=args.dataset, time_step=5)
+elif args.dataset == 'Labsensor':
+    X = load_IBRL_dataset(method='saits')  # (num_epochs, num_motes, 3)
+    if args.stream < 1.0:
+        n = max(1, int(X.shape[0] * args.stream))
+        X = X[:n]
 
 num_of_samples, num_of_ts, num_of_channel = X.shape
 
