@@ -1,5 +1,6 @@
 import sys
 import os
+import warnings
 sys.path.append('../')
 import pandas as pd
 import torch
@@ -12,6 +13,10 @@ import copy
 import numpy as np
 import random
 from datetime import datetime
+warnings.filterwarnings(
+    "ignore",
+    message=r"An issue occurred while importing 'pyg-lib'.*",
+)
 # from OCW.models.DynamicGNN import DynamicGCN, DynamicGAT, DynamicGraphSAGE
 from utils.DynamicGNN import DynamicGCN, DynamicGAT, DynamicGraphSAGE
 from argparse import ArgumentParser

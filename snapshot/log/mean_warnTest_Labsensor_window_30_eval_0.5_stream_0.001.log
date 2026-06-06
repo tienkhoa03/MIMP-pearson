@@ -1,0 +1,66 @@
+starting time: 2026-06-06 15:59:27.879483
+device: cuda
+dataset:Labsensor
+Applying stream subsample: keeping 3488 / 3488540 rows
+mean_X 83.03170090396499
+std_X 130.09124113088524
+base Labsensor data shape: (3488, 3) (3488, 3)
+which time window:0
+window_X: (3488, 3) (3488, 3)
+rows, cols: 5019 5019
+initial X nan: 0
+initial eval_X nan: 0
+in_channels: 3
+trans_X shape (3488, 3)
+trans_eval_X shape (3488, 3)
+nan of X_imputed: 0
+nan of eval_X: 0
+valid impute value samples: [ 0.82654947 -0.49283465 -0.49283465 ... -0.3330963   0.82654947
+ -0.49283465]
+valid true value samples: [ 3.03916156 -0.48762161 -0.47006932 ... -0.34469654  1.08730071
+ -0.49500412]
+valid impute error MAE: 0.4108628245193705
+valid impute error MSE: 1.1825035644234454
+valid impute error MRE: 0.6637215981971081
+valid min impute error MAE: 0.410863
+valid min impute error MSE: 1.182504
+valid min impute error MRE: 0.663722
+elapsed time: 3.345e-05
+min MAE error: epoch, MAE, time, MSE 0 0.410863 3.3e-05 1.182504
+min MSE error: epoch, MSE, time, MAE 0 1.182504 3.3e-05 0.410863
+ready to write data!
+done!
+finishing time: 2026-06-06 15:59:38.914580
+starting time: 2026-06-06 15:59:56.807034
+device: cuda
+dataset:Labsensor
+Applying stream subsample: keeping 3488 / 3488540 rows
+mean_X 83.03170090396499
+std_X 130.09124113088524
+base Labsensor data shape: (3488, 3) (3488, 3)
+which time window:0
+window_X: (3488, 3) (3488, 3)
+rows, cols: 5019 5019
+initial X nan: 0
+initial eval_X nan: 0
+in_channels: 3
+trans_X shape (3488, 3)
+trans_eval_X shape (3488, 3)
+nan of X_imputed: 0
+nan of eval_X: 0
+valid impute value samples: [ 0.82654947 -0.49283465 -0.49283465 ... -0.3330963   0.82654947
+ -0.49283465]
+valid true value samples: [ 3.03916156 -0.48762161 -0.47006932 ... -0.34469654  1.08730071
+ -0.49500412]
+valid impute error MAE: 0.4108628245193705
+valid impute error MSE: 1.1825035644234454
+valid impute error MRE: 0.6637215981971081
+valid min impute error MAE: 0.410863
+valid min impute error MSE: 1.182504
+valid min impute error MRE: 0.663722
+elapsed time: 3.4366666666666664e-05
+min MAE error: epoch, MAE, time, MSE 0 0.410863 3.4e-05 1.182504
+min MSE error: epoch, MSE, time, MAE 0 1.182504 3.4e-05 0.410863
+ready to write data!
+done!
+finishing time: 2026-06-06 16:00:07.971306
